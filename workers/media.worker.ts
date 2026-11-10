@@ -84,8 +84,19 @@ async function open(target: Job, file: File, thumbCount: number, thumbHeightPx: 
   const { requestId } = target
   const mp4 = createFile()
   target.mp4 = mp4
-  const info = await readUntilReady(requestId, file, mp4)
-  if (!info) return // cancelled
+  const ready = await readUntilReady(requestId, file, mp4)
+  if (!ready) return // cancelled
+  let info = ready.info
+  if (DEV) logIndex('ready', file, mp4, info)
+
+  if (info.isFragmented) {
+    // At onReady only the moofs of the first chunk are parsed, so duration and the sample table
+    // cover a few seconds. getInfo() returns copies, so it has to be called again afterwards.
+    const indexed = await indexFragments(requestId, file, mp4, ready.pos)
+    if (!indexed) return // cancelled
+    info = mp4.getInfo()
+    if (DEV) logIndex('indexed', file, mp4, info)
+  }
 
   const track = info.videoTracks[0]
   if (!track) throw new MediaError(MSG_UNREADABLE)
@@ -145,7 +156,11 @@ async function open(target: Job, file: File, thumbCount: number, thumbHeightPx: 
   mp4.setExtractionOptions(track.id, undefined, { nbSamples: SAMPLES_PER_BATCH })
   // seek() before start(): it rewinds extraction to sample 0 and returns the first file offset
   // mp4box still lacks. With moov at the end this jumps back to the mdat skipped during parsing.
-  const startPos = mp4.seek(0, true).offset
+  const seekPos = mp4.seek(0, true).offset
+  // Fragment samples lack `alreadyRead`, so seek() computes a NaN offset and falls back to the parse
+  // position, which is the end of the file after indexing. Extraction starts at sample 0 anyway.
+  const startPos = info.isFragmented ? (mp4.getTrackSamplesInfo(track.id)[0]?.offset ?? 0) : seekPos
+  if (DEV) console.info(`[media.worker] extraction start: ${startPos} (seek offset ${seekPos}, file size ${file.size})`)
   mp4.start()
 
   const completed = await readSamples(requestId, file, mp4, startPos, () => extracted || target.failure !== null)
@@ -162,8 +177,15 @@ async function open(target: Job, file: File, thumbCount: number, thumbHeightPx: 
   finish(target, 'done')
 }
 
-/** Feeds the file to mp4box in chunks until the moov is parsed. Returns null when cancelled. */
-async function readUntilReady(requestId: number, file: File, mp4: ISOFile): Promise<Movie | null> {
+/**
+ * Feeds the file to mp4box in chunks until the moov is parsed. Returns the movie and the position to
+ * continue reading from, or null when cancelled.
+ */
+async function readUntilReady(
+  requestId: number,
+  file: File,
+  mp4: ISOFile,
+): Promise<{ info: Movie; pos: number } | null> {
   let info: Movie | null = null
   let failed = false
   mp4.onReady = (movie) => {
@@ -187,7 +209,32 @@ async function readUntilReady(requestId: number, file: File, mp4: ISOFile): Prom
   }
 
   if (failed || !info) throw new MediaError(MSG_UNREADABLE)
-  return info
+  return { info, pos }
+}
+
+/**
+ * Reads a fragmented file to the end so mp4box parses every moof into the sample table. Extraction is
+ * not started yet and mdat data is discarded, so mp4box frees each chunk right away and memory stays
+ * flat. Returns false when cancelled.
+ */
+async function indexFragments(requestId: number, file: File, mp4: ISOFile, fromPos: number): Promise<boolean> {
+  let pos = fromPos
+  while (pos < file.size) {
+    const end = Math.min(pos + CHUNK_BYTES, file.size)
+    const bytes = await file.slice(pos, end).arrayBuffer()
+    if (!isActive(requestId)) return false
+    const next = mp4.appendBuffer(MP4BoxBuffer.fromArrayBuffer(bytes, pos), end >= file.size)
+    pos = typeof next === 'number' && next > pos ? next : end
+  }
+  return true
+}
+
+function logIndex(stage: string, file: File, mp4: ISOFile, info: Movie): void {
+  const track = info.videoTracks[0]
+  const table = track ? mp4.getTrackSamplesInfo(track.id)?.length : undefined
+  console.info(`[media.worker] ${stage}: fragmented ${info.isFragmented}, movie duration ${info.duration}/${info.timescale}, `
+    + `track nb_samples ${track?.nb_samples}, samples_duration ${track?.samples_duration}/${track?.timescale}, `
+    + `sample table ${table}, file size ${file.size}`)
 }
 
 /**
@@ -220,7 +267,8 @@ async function readSamples(
 
 /** Sample number → slot indices for the keyframes that thumbnails need. */
 function pickWantedSamples(mp4: ISOFile, track: Track, thumbCount: number, durationSec: number): Map<number, number[]> {
-  // The sample table is complete once moov is parsed, before any sample data is read.
+  // The sample table is complete before any sample data is read: from moov, or for fragmented files
+  // from the moofs collected by indexFragments.
   const keyframes = mp4.getTrackSamplesInfo(track.id)
     .filter((sample) => sample.is_sync)
     .map((sample) => ({ number: sample.number, timeSec: sample.cts / sample.timescale }))
