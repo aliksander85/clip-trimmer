@@ -139,6 +139,18 @@ describe('hitTest', () => {
     const tight = { inSec: 5, outSec: 5.1 }
     expect(hitTest(60, tight, 0, vp, tol)).toBe('in')
   })
+
+  it('picks the nearer handle when both are in range', () => {
+    const tight = { inSec: 5, outSec: 5.1 } // x = 60 and 61
+    expect(hitTest(59, tight, 0, vp, tol)).toBe('in')
+    expect(hitTest(62, tight, 0, vp, tol)).toBe('out')
+  })
+
+  it('keeps out reachable when squeezed against the start', () => {
+    const start = { inSec: 0, outSec: 0.1 } // x = 10 and 11
+    expect(hitTest(12, start, 5, vp, tol)).toBe('out')
+    expect(hitTest(10, start, 5, vp, tol)).toBe('in')
+  })
 })
 
 describe('thumbSlots', () => {

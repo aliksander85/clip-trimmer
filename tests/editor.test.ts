@@ -75,6 +75,13 @@ describe('editor store', () => {
     vi.unstubAllGlobals()
   })
 
+  it('pause clears isPlaying', () => {
+    const store = useEditorStore()
+    store.isPlaying = true
+    store.pause()
+    expect(store.isPlaying).toBe(false)
+  })
+
   it('reset works with nothing loaded', () => {
     const store = useEditorStore()
     expect(() => store.reset()).not.toThrow()

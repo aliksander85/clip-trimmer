@@ -2,6 +2,7 @@ import { onBeforeUnmount, onMounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useEditorStore } from '../stores/editor'
 import { thumbSlots } from '../../lib/timeline/geometry'
+import type { Viewport } from '../../lib/timeline/geometry'
 import { shouldRequestThumbs } from '../../lib/media/thumbnails'
 import { CANVAS_HEIGHT_PX, PADDING_PX, THUMB_WIDTH_PX, drawTimeline } from '../../lib/timeline/renderer'
 import type { RenderState } from '../../lib/timeline/renderer'
@@ -43,7 +44,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
     if (!dirty || !ctx || cssWidth === 0) return
     dirty = false
     drawTimeline(ctx, {
-      vp: { widthPx: cssWidth, durationSec: store.meta?.durationSec ?? 0, paddingPx: PADDING_PX },
+      vp: viewport(),
       thumbs: store.thumbs,
       inSec: store.inSec,
       outSec: store.outSec,
@@ -96,7 +97,11 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
     applySize()
   }
 
-  /** Hover highlight. Wired up by the mouse interaction task (T7). */
+  /** The same viewport the renderer draws with, so pointer math matches what is on screen. */
+  function viewport(): Viewport {
+    return { widthPx: cssWidth, durationSec: store.meta?.durationSec ?? 0, paddingPx: PADDING_PX }
+  }
+
   function setHover(next: RenderState['hover']): void {
     if (hover === next) return
     hover = next
@@ -150,5 +155,5 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
     ctx = null
   })
 
-  return { markDirty, setHover }
+  return { markDirty, setHover, viewport }
 }

@@ -80,8 +80,12 @@ export function hitTest(
   tolerancePx: number,
 ): HitTarget | null {
   // Priority matters when targets overlap: handles > playhead > track.
-  if (Math.abs(x - timeToX(trim.inSec, vp)) <= tolerancePx) return 'in'
-  if (Math.abs(x - timeToX(trim.outSec, vp)) <= tolerancePx) return 'out'
+  const inDist = Math.abs(x - timeToX(trim.inSec, vp))
+  const outDist = Math.abs(x - timeToX(trim.outSec, vp))
+  // With handles squeezed together the nearer one wins; a fixed preference would make the other
+  // unreachable (e.g. in = 0, out = minLen: in cannot move, out cannot be grabbed).
+  if (inDist <= tolerancePx && inDist <= outDist) return 'in'
+  if (outDist <= tolerancePx) return 'out'
   if (Math.abs(x - timeToX(playheadSec, vp)) <= tolerancePx) return 'playhead'
   if (x >= vp.paddingPx && x <= vp.widthPx - vp.paddingPx) return 'track'
   return null

@@ -106,8 +106,13 @@ export const useEditorStore = defineStore('editor', () => {
     currentSec.value = Math.max(0, max === undefined ? sec : Math.min(sec, max))
   }
 
+  /** Asks the preview to stop; isPlaying is otherwise written only by the <video> events. */
+  function pause(): void {
+    isPlaying.value = false
+  }
+
   return {
     phase, file, meta, inSec, outSec, currentSec, isPlaying, thumbs, exportProgress, exportUrl, error,
-    loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim, seek, reset, onReset,
+    loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim, seek, pause, reset, onReset,
   }
 })

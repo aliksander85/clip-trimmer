@@ -35,6 +35,16 @@ watch(
   },
 )
 
+// Pause requests from elsewhere (the timeline grabs the playhead). The resulting pause event writes
+// the same false back, so this does not loop.
+watch(
+  () => store.isPlaying,
+  (playing) => {
+    const el = video.value
+    if (!playing && el && !el.paused) el.pause()
+  },
+)
+
 function stopFrameLoop(): void {
   if (frameCallbackId !== null) video.value?.cancelVideoFrameCallback(frameCallbackId)
   frameCallbackId = null
@@ -44,9 +54,16 @@ function stopFrameLoop(): void {
 function syncFromVideo(): void {
   const el = video.value
   if (!el) return
-  if (store.meta && el.currentTime >= store.outSec) {
-    el.pause()
-    el.currentTime = store.inSec
+  // Only while playing: a paused seek past out (timeline click) is a legitimate position.
+  if (store.meta && !el.paused) {
+    if (el.currentTime >= store.outSec) {
+      el.pause()
+      el.currentTime = store.inSec
+    }
+    else if (el.currentTime < store.inSec) {
+      // in was moved past the playhead during playback; keep playback inside the trim.
+      el.currentTime = store.inSec
+    }
   }
   if (Math.abs(store.currentSec - el.currentTime) > SEEK_EPSILON_SEC) store.seek(el.currentTime)
 }
@@ -82,6 +99,12 @@ function onTimeUpdate(): void {
   if (typeof video.value?.requestVideoFrameCallback !== 'function' || !store.isPlaying) syncFromVideo()
 }
 
+function onEnded(): void {
+  // With out = duration the clip can end between frame callbacks, before the out check ever fires.
+  const el = video.value
+  if (el && store.meta) el.currentTime = store.inSec
+}
+
 function toggle(): void {
   const el = video.value
   if (!el) return
@@ -99,6 +122,7 @@ function toggle(): void {
       @play="onPlay"
       @pause="onPause"
       @timeupdate="onTimeUpdate"
+      @ended="onEnded"
     />
     <button type="button" @click="toggle">{{ store.isPlaying ? 'Пауза' : 'Играть' }}</button>
   </div>
