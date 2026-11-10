@@ -130,7 +130,7 @@ drawTimeline(ctx: CanvasRenderingContext2D, s: RenderState): void
 ```ts
 // главный поток → media.worker
 type MediaRequest =
-  | { type: 'open'; requestId: number; file: File; thumbTimesSec: number[]; thumbHeightPx: number }
+  | { type: 'open'; requestId: number; file: File; thumbCount: number; thumbHeightPx: number }  // времена слотов воркер считает сам: slotTimes(thumbCount, durationSec)
   | { type: 'cancel'; requestId: number }
 
 // media.worker → главный поток

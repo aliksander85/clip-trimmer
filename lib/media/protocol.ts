@@ -9,7 +9,8 @@ export interface VideoMeta {
 
 // Main thread -> media.worker
 export type MediaRequest =
-  | { type: 'open'; requestId: number; file: File; thumbTimesSec: number[]; thumbHeightPx: number }
+  // Slot count, not times: the duration is known only after the worker parses the file.
+  | { type: 'open'; requestId: number; file: File; thumbCount: number; thumbHeightPx: number }
   | { type: 'cancel'; requestId: number }
 
 // media.worker -> main thread
