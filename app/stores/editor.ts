@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, shallowRef } from 'vue'
 import { clampTrim } from '../../lib/timeline/geometry'
+import type { VideoMeta } from '../../lib/media/protocol'
+
+export type { VideoMeta }
 
 export type Phase = 'empty' | 'loading' | 'ready' | 'exporting' | 'exported' | 'error'
-
-export interface VideoMeta {
-  durationSec: number
-  width: number
-  height: number
-  codec: string
-  fps: number | null
-}
 
 export const MAX_FILE_BYTES = 500 * 1024 * 1024
 export const MIN_TRIM_SEC = 0.1
@@ -78,6 +73,11 @@ export const useEditorStore = defineStore('editor', () => {
     phase.value = 'ready'
   }
 
+  function setError(message: string): void {
+    error.value = message
+    phase.value = 'error'
+  }
+
   function setThumb(index: number, bitmap: ImageBitmap): void {
     const list = thumbs.value.slice()
     // Stale slot: close the replaced bitmap, otherwise it leaks until reset.
@@ -100,6 +100,6 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     phase, file, meta, inSec, outSec, currentSec, isPlaying, thumbs, exportProgress, exportUrl, error,
-    loadFile, setMeta, setThumb, setTrim, seek, reset, onReset,
+    loadFile, setMeta, setError, setThumb, setTrim, seek, reset, onReset,
   }
 })

@@ -9,6 +9,12 @@ export default defineNuxtConfig({
     // GitHub Pages serves the site from /<repo>/, so the base must be configurable at build time.
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
   },
+  vite: {
+    optimizeDeps: {
+      // Imported only from workers, so Vite finds them late and reloads the page mid-session in dev.
+      include: ['mp4box', 'mediabunny'],
+    },
+  },
   typescript: {
     strict: true,
     tsConfig: {

@@ -43,6 +43,13 @@ describe('editor store', () => {
     expect([store.inSec, store.outSec, store.phase]).toEqual([0, 10, 'ready'])
   })
 
+  it('setError switches to the error phase with the message', () => {
+    const store = useEditorStore()
+    store.loadFile(fakeFile(10))
+    store.setError('boom')
+    expect([store.phase, store.error]).toEqual(['error', 'boom'])
+  })
+
   it('setTrim enforces the minimum length', () => {
     const store = useEditorStore()
     store.setMeta(meta)
