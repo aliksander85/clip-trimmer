@@ -7,10 +7,17 @@ const media = useMediaWorker()
 // Checked in the page (inside ClientOnly) because the globals exist only in the browser.
 const supported = typeof VideoDecoder !== 'undefined' && typeof VideoEncoder !== 'undefined'
 
-// Explicit call instead of watching store.file: re-picking the same File object would not trigger a watcher.
 function onSelect(file: File): void {
   store.loadFile(file)
-  if (store.phase === 'loading') media.open(file)
+}
+
+// The worker needs the slot count, which depends on the timeline width, so the canvas starts the work
+// (and restarts it when a resize changes the count enough).
+function onSlots(count: number): void {
+  const file = store.file
+  if (!file) return
+  store.prepareThumbs(count)
+  media.open(file, count)
 }
 </script>
 
@@ -25,6 +32,7 @@ function onSelect(file: File): void {
       />
       <template v-else>
         <VideoPreview />
+        <TimelineCanvas @slots="onSlots" />
         <p v-if="store.meta" class="meta">
           {{ store.meta.durationSec.toFixed(1) }} с ·
           {{ store.meta.width }}×{{ store.meta.height }} ·

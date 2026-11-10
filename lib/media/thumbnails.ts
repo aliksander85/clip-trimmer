@@ -45,3 +45,15 @@ export function pickKeyframes(slotTimes: number[], keyframeTimes: number[]): Key
     .sort(([a], [b]) => a - b)
     .map(([keyframeIndex, slots]) => ({ keyframeIndex, slots }))
 }
+
+// SPEC section 6: smaller slot-count changes stretch the existing thumbnails instead.
+const REQUEST_THRESHOLD = 0.2
+
+/** Whether a new slot count differs enough from the one already requested to justify decoding again. */
+export function shouldRequestThumbs(requestedCount: number, nextCount: number): boolean {
+  if (nextCount <= 0) return false
+  if (requestedCount <= 0) return true
+  // Rounded to avoid float noise: 10 -> 12 is exactly 20% but computes as 0.19999…
+  const change = Math.round((Math.abs(nextCount - requestedCount) / requestedCount) * 1e6) / 1e6
+  return change >= REQUEST_THRESHOLD
+}

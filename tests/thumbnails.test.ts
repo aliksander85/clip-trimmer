@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pickKeyframes } from '../lib/media/thumbnails'
+import { pickKeyframes, shouldRequestThumbs } from '../lib/media/thumbnails'
 
 describe('pickKeyframes', () => {
   it('picks the nearest keyframe not later than each slot', () => {
@@ -49,5 +49,27 @@ describe('pickKeyframes', () => {
   it('handles empty inputs', () => {
     expect(pickKeyframes([], [0, 1])).toEqual([])
     expect(pickKeyframes([1, 2], [])).toEqual([])
+  })
+})
+
+describe('shouldRequestThumbs', () => {
+  it('requests the first time', () => {
+    expect(shouldRequestThumbs(0, 10)).toBe(true)
+  })
+
+  it('never requests an empty set', () => {
+    expect(shouldRequestThumbs(10, 0)).toBe(false)
+  })
+
+  it('keeps existing thumbnails below a 20% change', () => {
+    expect(shouldRequestThumbs(10, 11)).toBe(false)
+    expect(shouldRequestThumbs(10, 9)).toBe(false)
+    expect(shouldRequestThumbs(10, 10)).toBe(false)
+  })
+
+  it('requests at exactly 20% and above, both directions', () => {
+    expect(shouldRequestThumbs(10, 12)).toBe(true)
+    expect(shouldRequestThumbs(10, 8)).toBe(true)
+    expect(shouldRequestThumbs(10, 30)).toBe(true)
   })
 })

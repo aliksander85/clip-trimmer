@@ -1,12 +1,11 @@
 import { onBeforeUnmount } from 'vue'
 import { useEditorStore } from '../stores/editor'
 import { MSG_UNREADABLE } from '../../lib/media/protocol'
+import { STRIP_HEIGHT_PX } from '../../lib/timeline/renderer'
 import type { MediaRequest, MediaResponse } from '../../lib/media/protocol'
 
-// Temporary until T6: the timeline canvas does not exist yet, so its width cannot drive thumbSlots().
-const THUMB_COUNT = 12
-// CSS height of the thumbnail strip; decoded at device pixels so retina screens get sharp thumbs.
-const THUMB_CSS_HEIGHT_PX = 48
+// Decoded at device pixels so retina screens get sharp thumbs.
+const THUMB_CSS_HEIGHT_PX = STRIP_HEIGHT_PX
 
 const DEV = import.meta.dev
 
@@ -75,7 +74,7 @@ export function useMediaWorker() {
     }
   }
 
-  function open(file: File): void {
+  function open(file: File, slotCount: number): void {
     terminate()
     const requestId = ++currentId
     openedAt = performance.now()
@@ -91,7 +90,7 @@ export function useMediaWorker() {
       type: 'open',
       requestId,
       file,
-      thumbCount: THUMB_COUNT,
+      thumbCount: slotCount,
       thumbHeightPx: Math.round(THUMB_CSS_HEIGHT_PX * window.devicePixelRatio),
     }
     next.postMessage(request)

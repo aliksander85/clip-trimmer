@@ -37,6 +37,12 @@ export const useEditorStore = defineStore('editor', () => {
     thumbs.value = []
   }
 
+  /** Closes current thumbnails and allocates `count` empty slots, so the layout is stable while they load. */
+  function prepareThumbs(count: number): void {
+    closeThumbs()
+    thumbs.value = Array.from({ length: count }, () => null)
+  }
+
   function reset(): void {
     for (const hook of resetHooks) hook()
     closeThumbs()
@@ -67,6 +73,8 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function setMeta(next: VideoMeta): void {
+    // A re-open for a new slot count (window resize) parses the same file again; keep the user's trim.
+    if (meta.value) return
     meta.value = next
     inSec.value = 0
     outSec.value = next.durationSec
@@ -100,6 +108,6 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     phase, file, meta, inSec, outSec, currentSec, isPlaying, thumbs, exportProgress, exportUrl, error,
-    loadFile, setMeta, setError, setThumb, setTrim, seek, reset, onReset,
+    loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim, seek, reset, onReset,
   }
 })
