@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Upload } from 'lucide-vue-next'
 
 defineProps<{ error: string | null, sampleLoading: boolean }>()
 const emit = defineEmits<{ select: [file: File], sample: [] }>()
@@ -31,7 +32,9 @@ function onDrop(event: DragEvent): void {
   >
     <p>Перетащите MP4 или выберите файл</p>
     <div class="picker-actions">
-      <button type="button" class="primary" @click="input?.click()">Выбрать файл</button>
+      <button type="button" class="primary" @click="input?.click()">
+        <Upload :size="18" aria-hidden="true" /> Выбрать файл
+      </button>
       <button type="button" :disabled="sampleLoading" @click="emit('sample')">
         <span v-if="sampleLoading" class="spinner" aria-hidden="true" />
         {{ sampleLoading ? 'Загружаю пример…' : 'Попробовать на примере' }}

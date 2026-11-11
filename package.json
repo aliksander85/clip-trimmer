@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@pinia/nuxt": "^1.0.3",
+    "lucide-vue-next": "^1.0.0",
     "mediabunny": "^1.65.2",
     "mp4box": "^2.5.0",
     "nuxt": "^4.4.8",

@@ -20,6 +20,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isPlaying = ref(false)
   // Counter, not a flag: every press must trigger the preview's watcher, even two in a row.
   const toggleRequest = ref(0)
+  const helpOpen = ref(false)
   // ImageBitmap must stay non-reactive: Vue proxies would break transfer/close and waste memory.
   const thumbs = shallowRef<(ImageBitmap | null)[]>([])
   const exportProgress = ref(0)
@@ -154,7 +155,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
-    phase, file, meta, inSec, outSec, currentSec, isPlaying, toggleRequest, thumbs, exportProgress, exportUrl, error,
+    helpOpen, phase, file, meta, inSec, outSec, currentSec, isPlaying, toggleRequest, thumbs, exportProgress, exportUrl, error,
     loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim,
     startExport, setExportProgress, finishExport, cancelExport, failExport, seek, pause, requestToggle, reset, onReset,
   }

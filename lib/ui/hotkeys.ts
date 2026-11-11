@@ -1,8 +1,11 @@
-export type HotkeyAction = 'toggle' | 'setIn' | 'setOut'
+export type HotkeyAction = 'toggle' | 'setIn' | 'setOut' | 'help'
 
 export interface KeyInput {
   /** `KeyboardEvent.code`: layout-independent, so I and O work on a Russian layout too. */
   code: string
+  /** `KeyboardEvent.key`: needed only for '?', whose physical key differs between layouts. */
+  key: string
+  shiftKey: boolean
   ctrlKey: boolean
   metaKey: boolean
   altKey: boolean
@@ -16,9 +19,18 @@ const TEXT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 // Space on these already activates them natively, so handling it here would fire twice.
 const ACTIVATABLE_TAGS = new Set(['BUTTON', 'A', 'SUMMARY'])
 
+/** Single source for the help dialog, so the list cannot drift from `resolveHotkey`. */
+export const HOTKEY_HELP: readonly { keys: string, action: string }[] = [
+  { keys: 'Пробел', action: 'Играть / пауза' },
+  { keys: 'I', action: 'Начало отрезка в позиции плейхеда' },
+  { keys: 'O', action: 'Конец отрезка в позиции плейхеда' },
+  { keys: '?', action: 'Открыть эту справку' },
+]
+
 export function resolveHotkey(key: KeyInput): HotkeyAction | null {
   if (key.ctrlKey || key.metaKey || key.altKey || key.repeat) return null
   if (key.targetEditable || TEXT_TAGS.has(key.targetTag)) return null
+  if (key.key === '?' || (key.code === 'Slash' && key.shiftKey)) return 'help'
   switch (key.code) {
     case 'Space':
       return ACTIVATABLE_TAGS.has(key.targetTag) ? null : 'toggle'

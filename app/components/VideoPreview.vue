@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { Pause, Play } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 
 const store = useEditorStore()
@@ -127,6 +128,15 @@ function toggle(): void {
       @timeupdate="onTimeUpdate"
       @ended="onEnded"
     />
-    <button type="button" @click="toggle">{{ store.isPlaying ? 'Пауза' : 'Играть' }}</button>
+    <button
+      type="button"
+      class="icon"
+      :aria-label="store.isPlaying ? 'Пауза' : 'Играть'"
+      :title="store.isPlaying ? 'Пауза (Пробел)' : 'Играть (Пробел)'"
+      @click="toggle"
+    >
+      <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />
+      <Play v-else :size="20" aria-hidden="true" />
+    </button>
   </div>
 </template>

@@ -3,7 +3,7 @@ import { applyMarker, resolveHotkey } from '../lib/ui/hotkeys'
 import type { KeyInput } from '../lib/ui/hotkeys'
 
 function key(over: Partial<KeyInput>): KeyInput {
-  return { code: 'Space', ctrlKey: false, metaKey: false, altKey: false, repeat: false, targetTag: 'BODY', targetEditable: false, ...over }
+  return { code: 'Space', key: ' ', shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, repeat: false, targetTag: 'BODY', targetEditable: false, ...over }
 }
 
 describe('resolveHotkey', () => {
@@ -12,6 +12,13 @@ describe('resolveHotkey', () => {
     expect(resolveHotkey(key({ code: 'KeyI' }))).toBe('setIn')
     expect(resolveHotkey(key({ code: 'KeyO' }))).toBe('setOut')
     expect(resolveHotkey(key({ code: 'KeyA' }))).toBeNull()
+  })
+
+  it('maps ? on any layout', () => {
+    expect(resolveHotkey(key({ code: 'Slash', key: '?', shiftKey: true }))).toBe('help')
+    expect(resolveHotkey(key({ code: 'Digit7', key: '?', shiftKey: true }))).toBe('help')
+    expect(resolveHotkey(key({ code: 'Slash', key: '/' }))).toBeNull()
+    expect(resolveHotkey(key({ code: 'Slash', key: '?', shiftKey: true, targetTag: 'INPUT' }))).toBeNull()
   })
 
   it('ignores keys typed into fields', () => {

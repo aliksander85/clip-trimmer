@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Download, X } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useExportWorker } from '../composables/useExportWorker'
 import { trimFileName } from '../../lib/media/filename'
@@ -19,17 +20,21 @@ const clipLength = computed(() => formatDuration(store.outSec - store.inSec))
       <template v-if="store.phase === 'exporting'">
         <progress max="1" :value="store.exportProgress" />
         <span class="percent">{{ percent }}%</span>
-        <button type="button" @click="exporter.cancel()">Отмена</button>
+        <button type="button" class="icon" aria-label="Отмена" title="Отмена" @click="exporter.cancel()">
+          <X :size="18" aria-hidden="true" />
+        </button>
       </template>
       <template v-else>
-        <button type="button" class="primary" @click="exporter.start()">Экспорт</button>
+        <button type="button" class="primary" @click="exporter.start()">
+          <Download :size="18" aria-hidden="true" /> Экспорт
+        </button>
         <span class="length" title="Длительность отрезка">{{ clipLength }}</span>
         <a
           v-if="store.phase === 'exported' && store.exportUrl"
           class="button"
           :href="store.exportUrl"
           :download="downloadName"
-        >Скачать</a>
+        ><Download :size="18" aria-hidden="true" /> Скачать</a>
       </template>
     </div>
     <p v-if="store.error" class="error" role="alert">{{ store.error }}</p>

@@ -29,6 +29,27 @@ body {
   gap: 16px;
 }
 
+.app-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+button.icon { padding: 8px; }
+
+.help {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+.help::backdrop { background: rgba(0, 0, 0, 0.6); }
+.help-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.help h2 { margin: 0; font-size: 18px; }
+.help h3 { margin: 16px 0 6px; font-size: 14px; color: var(--muted); font-weight: 600; }
+.help ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.help .keys { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin: 0; }
+.help .keys dt, .help .keys dd { margin: 0; }
+.help .note { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
 .app-header h1 { margin: 0; font-size: 22px; }
 .app-header p { margin: 4px 0 0; color: var(--muted); }
 
@@ -84,6 +105,10 @@ button.link {
   max-height: 55vh;
   background: #000;
   border-radius: var(--radius);
+}
+
+.preview .icon {
+  align-self: center;
 }
 
 .meta, .hint { margin: 0; color: var(--muted); font-size: 13px; }

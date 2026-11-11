@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { CircleHelp, FolderOpen } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useMediaWorker } from '../composables/useMediaWorker'
 import { useHotkeys } from '../composables/useHotkeys'
@@ -48,8 +49,13 @@ function onSlots(count: number): void {
     <UnsupportedBrowser v-if="!supported" />
     <main v-else class="app">
       <header class="app-header">
-        <h1>Clip Trimmer</h1>
-        <p>Обрежьте видео прямо в браузере. Файл не покидает ваш компьютер.</p>
+        <div>
+          <h1>Clip Trimmer</h1>
+          <p>Обрежьте видео прямо в браузере. Файл не покидает ваш компьютер.</p>
+        </div>
+        <button type="button" class="icon" aria-label="Справка" title="Справка (?)" @click="store.helpOpen = true">
+          <CircleHelp :size="20" aria-hidden="true" />
+        </button>
       </header>
       <FilePicker
         v-if="store.phase === 'empty' || store.phase === 'error'"
@@ -69,11 +75,14 @@ function onSlots(count: number): void {
           <span class="spinner" aria-hidden="true" /> Читаю файл…
         </p>
         <p v-if="store.meta" class="hint">
-          <kbd>Пробел</kbd> играть/пауза · <kbd>I</kbd> начало отрезка · <kbd>O</kbd> конец отрезка
+          <kbd>Пробел</kbd> играть/пауза · <kbd>I</kbd> начало · <kbd>O</kbd> конец · <kbd>?</kbd> справка
         </p>
         <ExportPanel v-if="store.meta" />
-        <button type="button" class="link" @click="store.reset()">Другой файл</button>
+        <button type="button" class="link" @click="store.reset()">
+          <FolderOpen :size="16" aria-hidden="true" /> Другой файл
+        </button>
       </template>
+      <HelpDialog />
     </main>
   </ClientOnly>
 </template>
