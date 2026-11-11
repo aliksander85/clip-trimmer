@@ -39,6 +39,7 @@ function onSlots(count: number): void {
           {{ store.meta.codec }}<template v-if="store.meta.fps !== null"> · {{ store.meta.fps }} fps</template>
         </p>
         <p v-else-if="store.phase === 'loading'">Читаю файл…</p>
+        <ExportPanel v-if="store.meta" />
         <button type="button" @click="store.reset()">Другой файл</button>
       </template>
     </main>

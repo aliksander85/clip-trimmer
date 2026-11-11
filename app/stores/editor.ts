@@ -46,8 +46,7 @@ export const useEditorStore = defineStore('editor', () => {
   function reset(): void {
     for (const hook of resetHooks) hook()
     closeThumbs()
-    if (exportUrl.value) URL.revokeObjectURL(exportUrl.value)
-    exportUrl.value = null
+    revokeExportUrl()
     file.value = null
     meta.value = null
     inSec.value = 0
@@ -94,6 +93,42 @@ export const useEditorStore = defineStore('editor', () => {
     thumbs.value = list
   }
 
+  /** Revokes the previous result first: only one export URL is alive at a time. */
+  function revokeExportUrl(): void {
+    if (exportUrl.value) URL.revokeObjectURL(exportUrl.value)
+    exportUrl.value = null
+  }
+
+  function startExport(): void {
+    revokeExportUrl()
+    exportProgress.value = 0
+    error.value = null
+    phase.value = 'exporting'
+  }
+
+  function setExportProgress(value: number): void {
+    exportProgress.value = Math.min(1, Math.max(0, value))
+  }
+
+  function finishExport(blob: Blob): void {
+    revokeExportUrl()
+    exportUrl.value = URL.createObjectURL(blob)
+    exportProgress.value = 1
+    phase.value = 'exported'
+  }
+
+  function cancelExport(): void {
+    exportProgress.value = 0
+    phase.value = 'ready'
+  }
+
+  /** Back to `ready` with the message: the file and trim stay, so the user can retry. */
+  function failExport(message: string): void {
+    exportProgress.value = 0
+    error.value = message
+    phase.value = 'ready'
+  }
+
   function setTrim(nextIn: number, nextOut: number): void {
     if (!meta.value) return
     const trim = clampTrim(nextIn, nextOut, meta.value.durationSec, MIN_TRIM_SEC)
@@ -113,6 +148,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     phase, file, meta, inSec, outSec, currentSec, isPlaying, thumbs, exportProgress, exportUrl, error,
-    loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim, seek, pause, reset, onReset,
+    loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim,
+    startExport, setExportProgress, finishExport, cancelExport, failExport, seek, pause, reset, onReset,
   }
 })

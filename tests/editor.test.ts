@@ -75,6 +75,57 @@ describe('editor store', () => {
     vi.unstubAllGlobals()
   })
 
+  describe('export', () => {
+    function stubUrl() {
+      const create = vi.fn().mockReturnValueOnce('blob:a').mockReturnValueOnce('blob:b')
+      const revoke = vi.fn()
+      vi.stubGlobal('URL', { createObjectURL: create, revokeObjectURL: revoke })
+      return { revoke }
+    }
+
+    it('finish stores the url, a new export revokes it', () => {
+      const { revoke } = stubUrl()
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.startExport()
+      expect(store.phase).toBe('exporting')
+      store.finishExport(new Blob(['x']))
+      expect([store.phase, store.exportUrl]).toEqual(['exported', 'blob:a'])
+      store.startExport()
+      expect(revoke).toHaveBeenCalledWith('blob:a')
+      expect(store.exportUrl).toBeNull()
+      vi.unstubAllGlobals()
+    })
+
+    it('cancel returns to ready and keeps the trim', () => {
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.setTrim(2, 6)
+      store.startExport()
+      store.setExportProgress(0.4)
+      store.cancelExport()
+      expect([store.phase, store.exportProgress, store.inSec, store.outSec]).toEqual(['ready', 0, 2, 6])
+    })
+
+    it('fail returns to ready with the message', () => {
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.startExport()
+      store.failExport('boom')
+      expect([store.phase, store.error]).toEqual(['ready', 'boom'])
+    })
+
+    it('reset revokes the export url', () => {
+      const { revoke } = stubUrl()
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.finishExport(new Blob(['x']))
+      store.reset()
+      expect(revoke).toHaveBeenCalledWith('blob:a')
+      vi.unstubAllGlobals()
+    })
+  })
+
   it('pause clears isPlaying', () => {
     const store = useEditorStore()
     store.isPlaying = true
