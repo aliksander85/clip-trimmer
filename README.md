@@ -2,7 +2,7 @@
 
 A browser-based video trimmer. Drop an MP4, see a thumbnail timeline drawn on Canvas, pick a range, download the trimmed MP4. Everything runs on the client, there is no backend.
 
-**Demo:** TODO (GitHub Pages link)
+**Demo:** https://aliksander85.github.io/clip-trimmer/
 
 <!-- TODO: GIF, 10–15 s: load the sample → drag handles → play → export → download -->
 
