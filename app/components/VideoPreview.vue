@@ -2,8 +2,10 @@
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { Pause, Play } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
+import { useI18n } from '../composables/useI18n'
 
 const store = useEditorStore()
+const { t } = useI18n()
 const video = ref<HTMLVideoElement | null>(null)
 const url = ref<string | null>(null)
 
@@ -131,8 +133,8 @@ function toggle(): void {
     <button
       type="button"
       class="icon"
-      :aria-label="store.isPlaying ? 'Пауза' : 'Играть'"
-      :title="store.isPlaying ? 'Пауза (Пробел)' : 'Играть (Пробел)'"
+      :aria-label="store.isPlaying ? t('preview.pause') : t('preview.play')"
+      :title="store.isPlaying ? t('preview.pauseTitle') : t('preview.playTitle')"
       @click="toggle"
     >
       <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />

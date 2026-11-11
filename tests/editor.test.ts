@@ -43,11 +43,11 @@ describe('editor store', () => {
     expect([store.inSec, store.outSec, store.phase]).toEqual([0, 10, 'ready'])
   })
 
-  it('setError switches to the error phase with the message', () => {
+  it('setError switches to the error phase with the error', () => {
     const store = useEditorStore()
     store.loadFile(fakeFile(10))
-    store.setError('boom')
-    expect([store.phase, store.error]).toEqual(['error', 'boom'])
+    store.setError({ code: 'unreadable' })
+    expect([store.phase, store.error]).toEqual(['error', { code: 'unreadable' }])
   })
 
   it('setTrim enforces the minimum length', () => {
@@ -107,12 +107,12 @@ describe('editor store', () => {
       expect([store.phase, store.exportProgress, store.inSec, store.outSec]).toEqual(['ready', 0, 2, 6])
     })
 
-    it('fail returns to ready with the message', () => {
+    it('fail returns to ready with the error', () => {
       const store = useEditorStore()
       store.setMeta(meta)
       store.startExport()
-      store.failExport('boom')
-      expect([store.phase, store.error]).toEqual(['ready', 'boom'])
+      store.failExport({ code: 'unreadable' })
+      expect([store.phase, store.error]).toEqual(['ready', { code: 'unreadable' }])
     })
 
     it('reset revokes the export url', () => {

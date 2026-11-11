@@ -1,3 +1,5 @@
+import type { MessageKey } from '../i18n/messages'
+
 export type HotkeyAction = 'toggle' | 'setIn' | 'setOut' | 'help'
 
 export interface KeyInput {
@@ -20,11 +22,11 @@ const TEXT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 const ACTIVATABLE_TAGS = new Set(['BUTTON', 'A', 'SUMMARY'])
 
 /** Single source for the help dialog, so the list cannot drift from `resolveHotkey`. */
-export const HOTKEY_HELP: readonly { keys: string, action: string }[] = [
-  { keys: 'Пробел', action: 'Играть / пауза' },
-  { keys: 'I', action: 'Начало отрезка в позиции плейхеда' },
-  { keys: 'O', action: 'Конец отрезка в позиции плейхеда' },
-  { keys: '?', action: 'Открыть эту справку' },
+export const HOTKEY_HELP: readonly { keys: string, keysKey?: MessageKey, actionKey: MessageKey }[] = [
+  { keys: 'Space', keysKey: 'hotkey.space', actionKey: 'hotkey.toggle' },
+  { keys: 'I', actionKey: 'hotkey.setIn' },
+  { keys: 'O', actionKey: 'hotkey.setOut' },
+  { keys: '?', actionKey: 'hotkey.help' },
 ]
 
 export function resolveHotkey(key: KeyInput): HotkeyAction | null {

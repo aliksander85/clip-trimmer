@@ -1,3 +1,5 @@
+import type { ErrorInfo } from '../i18n/errors'
+
 export interface VideoMeta {
   durationSec: number
   width: number
@@ -18,7 +20,7 @@ export type MediaResponse =
   | { type: 'meta'; requestId: number; meta: VideoMeta }
   | { type: 'thumb'; requestId: number; index: number; bitmap: ImageBitmap } // sent with transfer: [bitmap]
   | { type: 'done'; requestId: number }
-  | { type: 'error'; requestId: number; message: string }
+  | { type: 'error'; requestId: number; error: ErrorInfo }
 
 // Main thread -> export.worker
 export type ExportRequest =
@@ -29,11 +31,4 @@ export type ExportRequest =
 export type ExportResponse =
   | { type: 'progress'; requestId: number; value: number }
   | { type: 'done'; requestId: number; blob: Blob }
-  | { type: 'error'; requestId: number; message: string }
-
-// User-facing texts live here so the worker and the main thread report the same wording (SPEC section 6).
-export const MSG_UNREADABLE = 'Не удалось прочитать файл, нужен MP4 (H.264)'
-
-export function unsupportedCodecMessage(codec: string): string {
-  return `Кодек ${codec} не поддерживается, нужен H.264`
-}
+  | { type: 'error'; requestId: number; error: ErrorInfo }

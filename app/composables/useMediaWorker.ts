@@ -1,6 +1,5 @@
 import { onBeforeUnmount } from 'vue'
 import { useEditorStore } from '../stores/editor'
-import { MSG_UNREADABLE } from '../../lib/media/protocol'
 import { STRIP_HEIGHT_PX } from '../../lib/timeline/renderer'
 import type { MediaRequest, MediaResponse } from '../../lib/media/protocol'
 
@@ -69,7 +68,7 @@ export function useMediaWorker() {
       case 'error':
         // Through the store so bitmaps already received are closed too; its hook runs reset().
         store.reset()
-        store.setError(message.message)
+        store.setError(message.error)
         break
     }
   }
@@ -83,7 +82,7 @@ export function useMediaWorker() {
     next.addEventListener('error', () => {
       if (requestId !== currentId) return
       store.reset()
-      store.setError(MSG_UNREADABLE)
+      store.setError({ code: 'unreadable' })
     })
     worker = next
     const request: MediaRequest = {

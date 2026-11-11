@@ -1,0 +1,64 @@
+import type { ru } from '../ru'
+
+// Typed by the Russian file: a missing or extra key fails typecheck.
+export const en: Record<keyof typeof ru, string> = {
+  'app.tagline': 'Trim your video right in the browser. The file never leaves your computer.',
+  'app.help': 'Help',
+  'app.helpHint': 'Help (?)',
+  'app.close': 'Close',
+  'app.anotherFile': 'Another file',
+  'app.reading': 'Reading the file…',
+  'app.language': 'Language',
+  'app.hint.space': 'Space',
+  'app.hint.toggle': 'play/pause',
+  'app.hint.in': 'start',
+  'app.hint.out': 'end',
+  'app.hint.help': 'help',
+
+  'picker.drop': 'Drop an MP4 here or choose a file',
+  'picker.choose': 'Choose file',
+  'picker.sample': 'Try the sample',
+  'picker.sampleLoading': 'Loading the sample…',
+
+  'preview.play': 'Play',
+  'preview.pause': 'Pause',
+  'preview.playTitle': 'Play (Space)',
+  'preview.pauseTitle': 'Pause (Space)',
+
+  'export.start': 'Export',
+  'export.cancel': 'Cancel',
+  'export.download': 'Download',
+  'export.clipLength': 'Clip length',
+
+  'unsupported.title': 'Browser not supported',
+  'unsupported.text': 'A browser with WebCodecs (VideoDecoder and VideoEncoder) is required, for example a current Chrome or Edge.',
+
+  'error.unreadable': 'Could not read the file, an MP4 (H.264) is required',
+  'error.unsupportedCodec': 'Codec {detail} is not supported, H.264 is required',
+  'error.exportFailed': 'Export failed ({detail})',
+  'error.fileTooLarge': 'The file is larger than 500 MB',
+  'error.sampleFailed': 'Could not load the sample. Check your connection and try again.',
+
+  'hotkey.space': 'Space',
+  'hotkey.toggle': 'Play / pause',
+  'hotkey.setIn': 'Set clip start at the playhead',
+  'hotkey.setOut': 'Set clip end at the playhead',
+  'hotkey.help': 'Open this help',
+
+  'help.keys': 'Hotkeys',
+  'help.keysNote': 'They work on any keyboard layout.',
+  'help.timeline.title': 'Timeline controls',
+  'help.timeline.1': 'Click the timeline to seek to that point.',
+  'help.timeline.2': 'Drag the left and right handles to choose the clip. The minimum length is 0.1 s.',
+  'help.timeline.3': 'Drag the playhead (the vertical line) to scrub through frames.',
+  'help.timeline.4': 'On a touch screen, everything works the same way with a finger.',
+  'help.how.title': 'How it works',
+  'help.how.1': 'Playback stays inside the selected clip: at the end it pauses and returns to the start.',
+  'help.how.2': 'Export shows progress and can be canceled. When it is done, a "Download" button appears.',
+  'help.how.3': 'The result is a new MP4 named after the source with a _trim suffix.',
+  'help.notes.title': 'Good to know',
+  'help.notes.1': 'Everything runs in your browser: the file is never uploaded.',
+  'help.notes.2': 'MP4 with H.264 up to 500 MB is supported.',
+  'help.notes.3': 'Chrome or Edge is required (WebCodecs). Firefox and Safari are not supported.',
+  'help.notes.4': 'One clip per file. To use another file, press "Another file".',
+}

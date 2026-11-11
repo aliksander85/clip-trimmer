@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, shallowRef } from 'vue'
 import { clampTrim } from '../../lib/timeline/geometry'
+import type { ErrorInfo } from '../../lib/i18n/errors'
 import type { VideoMeta } from '../../lib/media/protocol'
 
 export type { VideoMeta }
@@ -25,7 +26,7 @@ export const useEditorStore = defineStore('editor', () => {
   const thumbs = shallowRef<(ImageBitmap | null)[]>([])
   const exportProgress = ref(0)
   const exportUrl = ref<string | null>(null)
-  const error = ref<string | null>(null)
+  const error = ref<ErrorInfo | null>(null)
 
   // Workers (T4, T7) register here so reset() can terminate them without the store importing them.
   const resetHooks = new Set<() => void>()
@@ -66,7 +67,7 @@ export const useEditorStore = defineStore('editor', () => {
     reset()
     if (next.size > MAX_FILE_BYTES) {
       // Rejected before any read: the file is never stored.
-      error.value = 'Файл больше 500 МБ'
+      error.value = { code: 'fileTooLarge' }
       phase.value = 'error'
       return
     }
@@ -83,8 +84,8 @@ export const useEditorStore = defineStore('editor', () => {
     phase.value = 'ready'
   }
 
-  function setError(message: string): void {
-    error.value = message
+  function setError(info: ErrorInfo): void {
+    error.value = info
     phase.value = 'error'
   }
 
@@ -125,10 +126,10 @@ export const useEditorStore = defineStore('editor', () => {
     phase.value = 'ready'
   }
 
-  /** Back to `ready` with the message: the file and trim stay, so the user can retry. */
-  function failExport(message: string): void {
+  /** Back to `ready` with the error: the file and trim stay, so the user can retry. */
+  function failExport(info: ErrorInfo): void {
     exportProgress.value = 0
-    error.value = message
+    error.value = info
     phase.value = 'ready'
   }
 

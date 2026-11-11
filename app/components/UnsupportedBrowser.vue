@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
+</script>
+
 <template>
   <div class="unsupported" role="alert">
-    <h1>Браузер не поддерживается</h1>
-    <p>Нужен браузер с WebCodecs (VideoDecoder и VideoEncoder), например актуальный Chrome или Edge.</p>
+    <LanguageSwitcher />
+    <h1>{{ t('unsupported.title') }}</h1>
+    <p>{{ t('unsupported.text') }}</p>
   </div>
 </template>

@@ -1,6 +1,5 @@
 import { onBeforeUnmount } from 'vue'
 import { useEditorStore } from '../stores/editor'
-import { MSG_UNREADABLE } from '../../lib/media/protocol'
 import type { ExportRequest, ExportResponse } from '../../lib/media/protocol'
 
 export function useExportWorker() {
@@ -31,7 +30,7 @@ export function useExportWorker() {
         break
       case 'error':
         terminate()
-        store.failExport(message.message)
+        store.failExport(message.error)
         break
     }
   }
@@ -49,7 +48,7 @@ export function useExportWorker() {
     next.addEventListener('error', () => {
       if (requestId !== currentId) return
       terminate()
-      store.failExport(MSG_UNREADABLE)
+      store.failExport({ code: 'unreadable' })
     })
     worker = next
     next.postMessage(request)

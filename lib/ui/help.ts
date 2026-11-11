@@ -1,34 +1,22 @@
+import type { MessageKey } from '../i18n/messages'
+
 export interface HelpSection {
-  title: string
-  items: readonly string[]
+  titleKey: MessageKey
+  itemKeys: readonly MessageKey[]
 }
 
 // Hotkeys live in hotkeys.ts (HOTKEY_HELP); everything else the dialog says is here.
 export const HELP_SECTIONS: readonly HelpSection[] = [
   {
-    title: 'Управление таймлайном',
-    items: [
-      'Клик по таймлайну — перемотка к этой точке.',
-      'Тяните левую и правую ручки, чтобы выбрать отрезок. Минимальная длина — 0,1 с.',
-      'Тяните плейхед (вертикальную линию), чтобы листать кадры.',
-      'На сенсорном экране всё то же самое делается пальцем.',
-    ],
+    titleKey: 'help.timeline.title',
+    itemKeys: ['help.timeline.1', 'help.timeline.2', 'help.timeline.3', 'help.timeline.4'],
   },
   {
-    title: 'Как это работает',
-    items: [
-      'Воспроизведение идёт только внутри выбранного отрезка: дошли до конца — пауза и возврат к началу.',
-      'Экспорт показывает прогресс и его можно отменить. Когда готово, появится кнопка «Скачать».',
-      'Результат — новый MP4 с именем исходника и суффиксом _trim.',
-    ],
+    titleKey: 'help.how.title',
+    itemKeys: ['help.how.1', 'help.how.2', 'help.how.3'],
   },
   {
-    title: 'Важно знать',
-    items: [
-      'Всё работает в вашем браузере: файл никуда не загружается.',
-      'Поддерживается MP4 с H.264 до 500 МБ.',
-      'Нужен Chrome или Edge (WebCodecs). Firefox и Safari не поддерживаются.',
-      'Один отрезок на файл. Чтобы взять другой файл, нажмите «Другой файл».',
-    ],
+    titleKey: 'help.notes.title',
+    itemKeys: ['help.notes.1', 'help.notes.2', 'help.notes.3', 'help.notes.4'],
   },
 ]

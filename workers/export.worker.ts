@@ -1,5 +1,5 @@
 import { ALL_FORMATS, BlobSource, BufferTarget, Conversion, ConversionCanceledError, Input, Mp4OutputFormat, Output } from 'mediabunny'
-import { MSG_UNREADABLE } from '../lib/media/protocol'
+import type { ErrorInfo } from '../lib/i18n/errors'
 import type { ExportRequest, ExportResponse } from '../lib/media/protocol'
 
 const DEV = import.meta.env.DEV
@@ -21,9 +21,11 @@ function post(message: ExportResponse): void {
   self.postMessage(message)
 }
 
-function describeDiscarded(conversion: Conversion): string {
+const UNREADABLE: ErrorInfo = { code: 'unreadable' }
+
+function describeDiscarded(conversion: Conversion): ErrorInfo {
   const reasons = conversion.discardedTracks.map(item => `${item.track.type}: ${item.reason}`)
-  return reasons.length > 0 ? `Не удалось экспортировать (${reasons.join(', ')})` : MSG_UNREADABLE
+  return reasons.length > 0 ? { code: 'exportFailed', detail: reasons.join(', ') } : UNREADABLE
 }
 
 async function runExport(target: Job, file: File, inSec: number, outSec: number): Promise<void> {
@@ -40,7 +42,7 @@ async function runExport(target: Job, file: File, inSec: number, outSec: number)
 
   // A discarded audio track still leaves a valid file, but an invalid conversion has nothing to write.
   if (!conversion.isValid) {
-    post({ type: 'error', requestId: target.requestId, message: describeDiscarded(conversion) })
+    post({ type: 'error', requestId: target.requestId, error: describeDiscarded(conversion) })
     return
   }
 
@@ -56,7 +58,7 @@ async function runExport(target: Job, file: File, inSec: number, outSec: number)
 
   const buffer = bufferTarget.buffer
   if (!buffer) {
-    post({ type: 'error', requestId: target.requestId, message: MSG_UNREADABLE })
+    post({ type: 'error', requestId: target.requestId, error: UNREADABLE })
     return
   }
   if (DEV) {
@@ -87,7 +89,7 @@ self.addEventListener('message', (event: MessageEvent<ExportRequest>) => {
     .catch((error: unknown) => {
       if (target.canceled || error instanceof ConversionCanceledError) return
       console.error('[export.worker]', error)
-      post({ type: 'error', requestId: target.requestId, message: MSG_UNREADABLE })
+      post({ type: 'error', requestId: target.requestId, error: UNREADABLE })
     })
     .finally(() => {
       target.input.dispose()

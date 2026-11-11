@@ -1,6 +1,6 @@
 import { createFile, MP4BoxBuffer, MultiBufferStream, VisualSampleEntry } from 'mp4box'
 import type { ISOFile, Movie, Track } from 'mp4box'
-import { MSG_UNREADABLE, unsupportedCodecMessage } from '../lib/media/protocol'
+import type { ErrorInfo } from '../lib/i18n/errors'
 import type { MediaRequest, MediaResponse, VideoMeta } from '../lib/media/protocol'
 import { pickKeyframes } from '../lib/media/thumbnails'
 import { slotTimes } from '../lib/timeline/geometry'
@@ -13,7 +13,17 @@ const SAMPLES_PER_BATCH = 100
 const US_PER_SEC = 1_000_000
 const DEV = import.meta.env.DEV
 
-class MediaError extends Error {}
+class MediaError extends Error {
+  constructor(readonly info: ErrorInfo) {
+    super(info.code)
+  }
+}
+
+const UNREADABLE: ErrorInfo = { code: 'unreadable' }
+
+function unsupportedCodec(codec: string): ErrorInfo {
+  return { code: 'unsupportedCodec', detail: codec }
+}
 
 /** Everything one `open` request owns, so cancel/error/done release it through one path. */
 interface Job {
@@ -74,7 +84,7 @@ self.addEventListener('message', (event: MessageEvent<MediaRequest>) => {
     post({
       type: 'error',
       requestId: next.requestId,
-      message: error instanceof MediaError ? error.message : MSG_UNREADABLE,
+      error: error instanceof MediaError ? error.info : UNREADABLE,
     })
     finish(next, 'error')
   })
@@ -99,11 +109,11 @@ async function open(target: Job, file: File, thumbCount: number, thumbHeightPx: 
   }
 
   const track = info.videoTracks[0]
-  if (!track) throw new MediaError(MSG_UNREADABLE)
+  if (!track) throw new MediaError(UNREADABLE)
 
   const config = buildDecoderConfig(mp4, track)
   const support = await VideoDecoder.isConfigSupported(config).catch(() => null)
-  if (!support?.supported) throw new MediaError(unsupportedCodecMessage(track.codec))
+  if (!support?.supported) throw new MediaError(unsupportedCodec(track.codec))
   if (!isActive(requestId)) return
 
   const meta = buildMeta(info, track)
@@ -208,7 +218,7 @@ async function readUntilReady(
     pos = typeof next === 'number' && next > pos ? next : end
   }
 
-  if (failed || !info) throw new MediaError(MSG_UNREADABLE)
+  if (failed || !info) throw new MediaError(UNREADABLE)
   return { info, pos }
 }
 
@@ -253,7 +263,7 @@ async function readSamples(
   let budget = Math.ceil(file.size / CHUNK_BYTES) * 2 + 8
   let pos = startPos
   while (!isDone() && pos < file.size) {
-    if (budget-- <= 0) throw new MediaError(MSG_UNREADABLE)
+    if (budget-- <= 0) throw new MediaError(UNREADABLE)
     const end = Math.min(pos + CHUNK_BYTES, file.size)
     const bytes = await file.slice(pos, end).arrayBuffer()
     if (!isActive(requestId)) return false
@@ -330,10 +340,10 @@ function sendThumb(target: Job, index: number, bitmap: ImageBitmap): void {
 
 function buildDecoderConfig(mp4: ISOFile, track: Track): VideoDecoderConfig {
   const entry = mp4.getTrackById(track.id).mdia.minf.stbl.stsd.entries[0]
-  if (!(entry instanceof VisualSampleEntry)) throw new MediaError(MSG_UNREADABLE)
+  if (!(entry instanceof VisualSampleEntry)) throw new MediaError(UNREADABLE)
   // Only H.264 carries avcC. HEVC/AV1/VP9 are rejected here even if the browser could decode them,
   // because the product promises H.264 and the description format below is avcC-specific.
-  if (!entry.avcC) throw new MediaError(unsupportedCodecMessage(track.codec))
+  if (!entry.avcC) throw new MediaError(unsupportedCodec(track.codec))
 
   const stream = new MultiBufferStream()
   entry.avcC.write(stream)
@@ -352,7 +362,7 @@ function buildMeta(info: Movie, track: Track): VideoMeta {
   const movieSec = info.timescale > 0 ? info.duration / info.timescale : 0
   const trackSec = track.timescale > 0 ? track.samples_duration / track.timescale : 0
   const durationSec = movieSec > 0 ? movieSec : trackSec
-  if (!(durationSec > 0) || !Number.isFinite(durationSec)) throw new MediaError(MSG_UNREADABLE)
+  if (!(durationSec > 0) || !Number.isFinite(durationSec)) throw new MediaError(UNREADABLE)
 
   return {
     durationSec,

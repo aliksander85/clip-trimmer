@@ -4,9 +4,11 @@ import { CircleHelp, FolderOpen } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useMediaWorker } from '../composables/useMediaWorker'
 import { useHotkeys } from '../composables/useHotkeys'
+import { useI18n } from '../composables/useI18n'
 
 const store = useEditorStore()
 const media = useMediaWorker()
+const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 useHotkeys()
 // Checked in the page (inside ClientOnly) because the globals exist only in the browser.
@@ -27,7 +29,7 @@ async function onSample(): Promise<void> {
     store.loadFile(new File([blob], 'sample.mp4', { type: 'video/mp4' }))
   }
   catch {
-    store.setError('Не удалось загрузить пример. Проверьте соединение и попробуйте ещё раз.')
+    store.setError({ code: 'sampleFailed' })
   }
   finally {
     sampleLoading.value = false
@@ -51,11 +53,14 @@ function onSlots(count: number): void {
       <header class="app-header">
         <div>
           <h1>Clip Trimmer</h1>
-          <p>Обрежьте видео прямо в браузере. Файл не покидает ваш компьютер.</p>
+          <p>{{ t('app.tagline') }}</p>
         </div>
-        <button type="button" class="icon" aria-label="Справка" title="Справка (?)" @click="store.helpOpen = true">
-          <CircleHelp :size="20" aria-hidden="true" />
-        </button>
+        <div class="header-actions">
+          <LanguageSwitcher />
+          <button type="button" class="icon" :aria-label="t('app.help')" :title="t('app.helpHint')" @click="store.helpOpen = true">
+            <CircleHelp :size="20" aria-hidden="true" />
+          </button>
+        </div>
       </header>
       <FilePicker
         v-if="store.phase === 'empty' || store.phase === 'error'"
@@ -72,14 +77,14 @@ function onSlots(count: number): void {
           {{ store.meta.codec }}<template v-if="store.meta.fps !== null"> · {{ store.meta.fps }} fps</template>
         </p>
         <p v-else-if="store.phase === 'loading'" class="status">
-          <span class="spinner" aria-hidden="true" /> Читаю файл…
+          <span class="spinner" aria-hidden="true" /> {{ t('app.reading') }}
         </p>
         <p v-if="store.meta" class="hint">
-          <kbd>Пробел</kbd> играть/пауза · <kbd>I</kbd> начало · <kbd>O</kbd> конец · <kbd>?</kbd> справка
+          <kbd>{{ t('app.hint.space') }}</kbd> {{ t('app.hint.toggle') }} · <kbd>I</kbd> {{ t('app.hint.in') }} · <kbd>O</kbd> {{ t('app.hint.out') }} · <kbd>?</kbd> {{ t('app.hint.help') }}
         </p>
         <ExportPanel v-if="store.meta" />
         <button type="button" class="link" @click="store.reset()">
-          <FolderOpen :size="16" aria-hidden="true" /> Другой файл
+          <FolderOpen :size="16" aria-hidden="true" /> {{ t('app.anotherFile') }}
         </button>
       </template>
       <HelpDialog />
