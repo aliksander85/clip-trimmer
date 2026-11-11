@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { Download, X } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useExportWorker } from '../composables/useExportWorker'
-import { trimFileName } from '../../lib/media/filename'
 import { formatDuration } from '../../lib/ui/format'
 import { useI18n } from '../composables/useI18n'
 
@@ -12,7 +11,6 @@ const exporter = useExportWorker()
 const { t, errorText } = useI18n()
 
 const percent = computed(() => Math.round(store.exportProgress * 100))
-const downloadName = computed(() => trimFileName(store.file?.name ?? ''))
 const clipLength = computed(() => formatDuration(store.outSec - store.inSec))
 </script>
 
@@ -32,10 +30,10 @@ const clipLength = computed(() => formatDuration(store.outSec - store.inSec))
         </button>
         <span class="length" :title="t('export.clipLength')">{{ clipLength }}</span>
         <a
-          v-if="store.phase === 'exported' && store.exportUrl"
+          v-if="store.phase === 'exported' && store.exportUrl && store.exportName"
           class="button"
           :href="store.exportUrl"
-          :download="downloadName"
+          :download="store.exportName"
         ><Download :size="18" aria-hidden="true" /> {{ t('export.download') }}</a>
       </template>
     </div>

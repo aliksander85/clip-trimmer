@@ -73,7 +73,7 @@ export const en: Record<keyof typeof ru, string> = {
   'help.how.title': 'How it works',
   'help.how.1': 'Playback stays inside the selected clip: at the end it pauses and returns to the start.',
   'help.how.2': 'Export shows progress and can be canceled. When it is done, a "Download" button appears.',
-  'help.how.3': 'The result is a new MP4 named after the source with a _trim suffix.',
+  'help.how.3': 'The result is a new MP4 named after the source with a _trim suffix and the current date and time.',
   'help.notes.title': 'Good to know',
   'help.notes.1': 'Everything runs in your browser: the file is never uploaded.',
   'help.notes.2': 'MP4 with H.264 up to 500 MB is supported.',

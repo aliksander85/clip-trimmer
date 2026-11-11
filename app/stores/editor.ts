@@ -3,6 +3,7 @@ import { ref, shallowRef } from 'vue'
 import { clampTrim } from '../../lib/timeline/geometry'
 import type { ErrorInfo } from '../../lib/i18n/errors'
 import type { VideoMeta } from '../../lib/media/protocol'
+import { trimFileName } from '../../lib/media/filename'
 
 export type { VideoMeta }
 
@@ -28,6 +29,8 @@ export const useEditorStore = defineStore('editor', () => {
   const thumbs = shallowRef<(ImageBitmap | null)[]>([])
   const exportProgress = ref(0)
   const exportUrl = ref<string | null>(null)
+  // Fixed when the export finishes, so re-renders do not change the name the user is about to download.
+  const exportName = ref<string | null>(null)
   const error = ref<ErrorInfo | null>(null)
 
   // Workers (T4, T7) register here so reset() can terminate them without the store importing them.
@@ -103,6 +106,7 @@ export const useEditorStore = defineStore('editor', () => {
   function revokeExportUrl(): void {
     if (exportUrl.value) URL.revokeObjectURL(exportUrl.value)
     exportUrl.value = null
+    exportName.value = null
   }
 
   function startExport(): void {
@@ -119,6 +123,7 @@ export const useEditorStore = defineStore('editor', () => {
   function finishExport(blob: Blob): void {
     revokeExportUrl()
     exportUrl.value = URL.createObjectURL(blob)
+    exportName.value = trimFileName(file.value?.name ?? '', new Date())
     exportProgress.value = 1
     phase.value = 'exported'
   }
@@ -169,7 +174,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
-    helpOpen, muted, phase, file, meta, inSec, outSec, currentSec, isPlaying, toggleRequest, thumbs, exportProgress, exportUrl, error,
+    helpOpen, muted, phase, file, meta, inSec, outSec, currentSec, isPlaying, toggleRequest, thumbs, exportProgress, exportUrl, exportName, error,
     loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim,
     startExport, setExportProgress, finishExport, cancelExport, failExport, seek, pause, requestToggle, toggleMute, reset, onReset,
   }
