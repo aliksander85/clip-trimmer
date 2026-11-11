@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useTimelineRenderer } from '../composables/useTimelineRenderer'
 import { useEditorStore, MIN_TRIM_SEC } from '../stores/editor'
-import { CANVAS_HEIGHT_PX } from '../../lib/timeline/renderer'
+import { MIN_CANVAS_HEIGHT_PX } from '../../lib/timeline/renderer'
 import { hitTest, moveHandle, timeToX, xToTime } from '../../lib/timeline/geometry'
 import type { HitTarget } from '../../lib/timeline/geometry'
 
@@ -104,7 +104,7 @@ function onPointerLeave(): void {
   <canvas
     ref="canvas"
     class="timeline"
-    :style="{ height: `${CANVAS_HEIGHT_PX}px` }"
+    :style="{ minHeight: `${MIN_CANVAS_HEIGHT_PX}px` }"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
     @pointerup="onPointerEnd"
@@ -118,6 +118,8 @@ function onPointerLeave(): void {
 .timeline {
   display: block;
   width: 100%;
+  /* Fills the panel; the renderer places the strip by the height it gets. */
+  align-self: stretch;
   /* Without this the browser claims touch drags for scrolling/zoom and sends pointercancel. */
   touch-action: none;
 }

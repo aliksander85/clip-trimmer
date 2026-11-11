@@ -63,6 +63,7 @@ describe('drawTimeline', () => {
       currentSec: 5,
       hover: null,
       dpr: 2,
+      heightPx: 160,
     }
     drawTimeline(ctx, state)
 
@@ -86,7 +87,7 @@ describe('drawTimeline', () => {
     const { ctx, calls } = recordingContext()
     drawTimeline(ctx, {
       vp: { widthPx: 400, durationSec: 10, paddingPx: 12 },
-      thumbs: [], inSec: 0, outSec: 10, currentSec: 0, hover: null, dpr: 1,
+      thumbs: [], inSec: 0, outSec: 10, currentSec: 0, hover: null, dpr: 1, heightPx: 160,
     })
     expect(calls.some((c) => c.op === 'fillText' && c.style === COLORS.ruler)).toBe(true)
   })
@@ -97,7 +98,7 @@ describe('drawTimeline', () => {
     drawTimeline(ctx, {
       vp: { widthPx: 200, durationSec: 10, paddingPx: 12 },
       thumbs: [closed],
-      inSec: 0, outSec: 10, currentSec: 0, hover: null, dpr: 1,
+      inSec: 0, outSec: 10, currentSec: 0, hover: null, dpr: 1, heightPx: 160,
     })
     expect(calls.some((c) => c.op === 'drawImage')).toBe(false)
   })

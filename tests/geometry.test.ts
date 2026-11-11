@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  stripTopY,
   clampTrim,
   hitTest,
   moveHandle,
@@ -207,5 +208,23 @@ describe('rulerTicks', () => {
 
   it('falls back to whole hours for very long clips', () => {
     expect(rulerTicks(36 * 3600, 200, 64).stepSec % 3600).toBe(0)
+  })
+})
+
+describe('stripTopY', () => {
+  const spec = { rulerHeightPx: 24, blockHeightPx: 94, minGapPx: 16, maxGapPx: 32 }
+
+  it('keeps the minimum gap when there is no spare height', () => {
+    expect(stripTopY(118, spec)).toBe(40)
+    expect(stripTopY(50, spec)).toBe(40)
+  })
+
+  it('puts half of the spare height above the strip', () => {
+    expect(stripTopY(118 + 20, spec)).toBe(24 + 16)
+    expect(stripTopY(118 + 44, spec)).toBe(24 + 22)
+  })
+
+  it('caps the gap on a tall canvas', () => {
+    expect(stripTopY(1000, spec)).toBe(24 + 32)
   })
 })

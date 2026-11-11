@@ -9,6 +9,24 @@ export interface Trim {
   outSec: number
 }
 
+export interface LayoutSpec {
+  rulerHeightPx: number
+  /** Strip plus the label rows under it; moves as one block. */
+  blockHeightPx: number
+  minGapPx: number
+  maxGapPx: number
+}
+
+/**
+ * Y of the strip top. The ruler is pinned to the canvas top; the gap below it takes half of the
+ * spare height, clamped so a tall panel does not tear the ruler away from the strip.
+ * Whatever is left over stays empty at the bottom.
+ */
+export function stripTopY(heightPx: number, spec: LayoutSpec): number {
+  const free = Math.max(0, heightPx - spec.rulerHeightPx - spec.blockHeightPx)
+  return spec.rulerHeightPx + clamp(free / 2, spec.minGapPx, spec.maxGapPx)
+}
+
 export type HitTarget = 'in' | 'out' | 'playhead' | 'track'
 
 function clamp(value: number, min: number, max: number): number {

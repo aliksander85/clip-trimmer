@@ -1,5 +1,5 @@
-import { rulerTicks, thumbSlots, timeToX } from './geometry'
-import type { Viewport } from './geometry'
+import { rulerTicks, stripTopY, thumbSlots, timeToX } from './geometry'
+import type { LayoutSpec, Viewport } from './geometry'
 
 export interface RenderState {
   vp: Viewport
@@ -9,16 +9,25 @@ export interface RenderState {
   currentSec: number
   hover: 'in' | 'out' | 'playhead' | null
   dpr: number
+  /** Canvas CSS height; the strip position follows from it. */
+  heightPx: number
 }
 
 // Layout in CSS pixels; drawTimeline scales everything by dpr itself.
 export const PADDING_PX = 12
-// Top RULER_HEIGHT_PX is the time ruler; the gap leaves room for the handles' overhang.
+// Top RULER_HEIGHT_PX is the time ruler, pinned to the canvas top.
 export const RULER_HEIGHT_PX = 24
-export const STRIP_TOP_PX = RULER_HEIGHT_PX + 8
 export const STRIP_HEIGHT_PX = 48
 // Room below the strip for two label rows: in/out, then the playhead time.
-export const CANVAS_HEIGHT_PX = STRIP_TOP_PX + STRIP_HEIGHT_PX + 46
+const LABELS_HEIGHT_PX = 46
+// Min gap exceeds the handle overhang so ruler ticks and handles never touch.
+const LAYOUT: LayoutSpec = {
+  rulerHeightPx: RULER_HEIGHT_PX,
+  blockHeightPx: STRIP_HEIGHT_PX + LABELS_HEIGHT_PX,
+  minGapPx: 16,
+  maxGapPx: 32,
+}
+export const MIN_CANVAS_HEIGHT_PX = LAYOUT.rulerHeightPx + LAYOUT.minGapPx + LAYOUT.blockHeightPx
 export const THUMB_WIDTH_PX = 80
 
 const HANDLE_WIDTH_PX = 8
@@ -92,7 +101,7 @@ function drawRuler(ctx: CanvasRenderingContext2D, s: RenderState): void {
   ctx.fillRect(vp.paddingPx, baseY, trackWidth, 1)
 }
 
-function drawThumbs(ctx: CanvasRenderingContext2D, s: RenderState): void {
+function drawThumbs(ctx: CanvasRenderingContext2D, s: RenderState, stripTop: number): void {
   const trackWidth = Math.max(0, s.vp.widthPx - 2 * s.vp.paddingPx)
   // Lay out by the bitmaps we have, not by the slot count the width now allows: when the window
   // changes only slightly, no new thumbnails are requested and the existing ones are stretched.
@@ -115,11 +124,11 @@ function drawThumbs(ctx: CanvasRenderingContext2D, s: RenderState): void {
       ctx.drawImage(
         bitmap,
         (bitmap.width - sw) / 2, (bitmap.height - sh) / 2, sw, sh,
-        x0, STRIP_TOP_PX, dw, STRIP_HEIGHT_PX,
+        x0, stripTop, dw, STRIP_HEIGHT_PX,
       )
     } else {
       ctx.fillStyle = COLORS.placeholder
-      ctx.fillRect(x0, STRIP_TOP_PX, x1 - x0 - 1, STRIP_HEIGHT_PX)
+      ctx.fillRect(x0, stripTop, x1 - x0 - 1, STRIP_HEIGHT_PX)
     }
   }
 }
@@ -141,15 +150,16 @@ function drawLabel(
 
 export function drawTimeline(ctx: CanvasRenderingContext2D, s: RenderState): void {
   const { vp } = s
-  const stripBottom = STRIP_TOP_PX + STRIP_HEIGHT_PX
+  const stripTop = stripTopY(s.heightPx, LAYOUT)
+  const stripBottom = stripTop + STRIP_HEIGHT_PX
   ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0)
 
   // 1. Background
   ctx.fillStyle = COLORS.background
-  ctx.fillRect(0, 0, vp.widthPx, CANVAS_HEIGHT_PX)
+  ctx.fillRect(0, 0, vp.widthPx, s.heightPx)
 
   // 2. Thumbnails (placeholder for null)
-  drawThumbs(ctx, s)
+  drawThumbs(ctx, s, stripTop)
 
   // 2b. Time ruler above the strip
   drawRuler(ctx, s)
@@ -163,17 +173,17 @@ export function drawTimeline(ctx: CanvasRenderingContext2D, s: RenderState): voi
 
   // 3. Dimming outside [in, out]
   ctx.fillStyle = COLORS.dim
-  ctx.fillRect(vp.paddingPx, STRIP_TOP_PX, Math.max(0, inX - vp.paddingPx), STRIP_HEIGHT_PX)
-  ctx.fillRect(outX, STRIP_TOP_PX, Math.max(0, trackEnd - outX), STRIP_HEIGHT_PX)
+  ctx.fillRect(vp.paddingPx, stripTop, Math.max(0, inX - vp.paddingPx), STRIP_HEIGHT_PX)
+  ctx.fillRect(outX, stripTop, Math.max(0, trackEnd - outX), STRIP_HEIGHT_PX)
 
   // 4. Selection frame
   ctx.strokeStyle = COLORS.frame
   ctx.lineWidth = 2
   // Half-pixel inset so the 2px line stays inside the strip instead of bleeding outwards.
-  ctx.strokeRect(inX, STRIP_TOP_PX + 1, Math.max(0, outX - inX), STRIP_HEIGHT_PX - 2)
+  ctx.strokeRect(inX, stripTop + 1, Math.max(0, outX - inX), STRIP_HEIGHT_PX - 2)
 
   // 5. Handles
-  const handleTop = STRIP_TOP_PX - HANDLE_OVERHANG_PX
+  const handleTop = stripTop - HANDLE_OVERHANG_PX
   const handleHeight = STRIP_HEIGHT_PX + 2 * HANDLE_OVERHANG_PX
   ctx.fillStyle = s.hover === 'in' ? COLORS.handleHover : COLORS.handle
   ctx.fillRect(inX - HANDLE_WIDTH_PX, handleTop, HANDLE_WIDTH_PX, handleHeight)

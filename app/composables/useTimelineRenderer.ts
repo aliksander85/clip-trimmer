@@ -4,7 +4,7 @@ import { useEditorStore } from '../stores/editor'
 import { thumbSlots } from '../../lib/timeline/geometry'
 import type { Viewport } from '../../lib/timeline/geometry'
 import { shouldRequestThumbs } from '../../lib/media/thumbnails'
-import { CANVAS_HEIGHT_PX, PADDING_PX, THUMB_WIDTH_PX, drawTimeline } from '../../lib/timeline/renderer'
+import { PADDING_PX, THUMB_WIDTH_PX, drawTimeline } from '../../lib/timeline/renderer'
 import type { RenderState } from '../../lib/timeline/renderer'
 
 // Window drags fire a resize per pixel; wait until the size settles before asking the worker for more.
@@ -24,6 +24,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
   const store = useEditorStore()
   let ctx: CanvasRenderingContext2D | null = null
   let cssWidth = 0
+  let cssHeight = 0
   let dpr = 1
   let dirty = false
   let rafId: number | null = null
@@ -41,7 +42,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
   function frame(): void {
     // Cleared first so anything marking dirty during the draw schedules the next frame.
     rafId = null
-    if (!dirty || !ctx || cssWidth === 0) return
+    if (!dirty || !ctx || cssWidth === 0 || cssHeight === 0) return
     dirty = false
     drawTimeline(ctx, {
       vp: viewport(),
@@ -51,6 +52,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
       currentSec: store.currentSec,
       hover,
       dpr,
+      heightPx: cssHeight,
     })
   }
 
@@ -58,7 +60,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
     const el = canvas.value
     if (!el) return
     const width = Math.round(cssWidth * dpr)
-    const height = Math.round(CANVAS_HEIGHT_PX * dpr)
+    const height = Math.round(cssHeight * dpr)
     // Assigning width/height clears the canvas and reallocates the buffer, so only on a real change.
     if (el.width !== width) el.width = width
     if (el.height !== height) el.height = height
@@ -119,6 +121,7 @@ export function useTimelineRenderer(canvas: Ref<HTMLCanvasElement | null>, optio
       const entry = entries[entries.length - 1]
       if (!entry) return
       cssWidth = entry.contentRect.width
+      cssHeight = entry.contentRect.height
       applySize()
       scheduleSlotCheck()
     })
