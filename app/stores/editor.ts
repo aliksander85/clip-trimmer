@@ -18,6 +18,8 @@ export const useEditorStore = defineStore('editor', () => {
   const outSec = ref(0)
   const currentSec = ref(0)
   const isPlaying = ref(false)
+  // Counter, not a flag: every press must trigger the preview's watcher, even two in a row.
+  const toggleRequest = ref(0)
   // ImageBitmap must stay non-reactive: Vue proxies would break transfer/close and waste memory.
   const thumbs = shallowRef<(ImageBitmap | null)[]>([])
   const exportProgress = ref(0)
@@ -146,9 +148,14 @@ export const useEditorStore = defineStore('editor', () => {
     isPlaying.value = false
   }
 
+  /** Asks the preview to play/pause; the <video> owns the real state and writes isPlaying back. */
+  function requestToggle(): void {
+    toggleRequest.value++
+  }
+
   return {
-    phase, file, meta, inSec, outSec, currentSec, isPlaying, thumbs, exportProgress, exportUrl, error,
+    phase, file, meta, inSec, outSec, currentSec, isPlaying, toggleRequest, thumbs, exportProgress, exportUrl, error,
     loadFile, setMeta, setError, prepareThumbs, setThumb, setTrim,
-    startExport, setExportProgress, finishExport, cancelExport, failExport, seek, pause, reset, onReset,
+    startExport, setExportProgress, finishExport, cancelExport, failExport, seek, pause, requestToggle, reset, onReset,
   }
 })

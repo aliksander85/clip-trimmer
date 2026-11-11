@@ -4,6 +4,7 @@ declare const process: { env: Record<string, string | undefined> }
 export default defineNuxtConfig({
   compatibilityDate: '2026-11-10',
   ssr: false,
+  css: ['~/assets/css/main.css'],
   modules: ['@pinia/nuxt', '@nuxt/eslint'],
   app: {
     // GitHub Pages serves the site from /<repo>/, so the base must be configurable at build time.

@@ -45,6 +45,9 @@ watch(
   },
 )
 
+// Hotkey requests (Space). Without a loaded video there is nothing to toggle.
+watch(() => store.toggleRequest, () => toggle())
+
 function stopFrameLoop(): void {
   if (frameCallbackId !== null) video.value?.cancelVideoFrameCallback(frameCallbackId)
   frameCallbackId = null
