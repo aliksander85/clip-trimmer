@@ -250,6 +250,9 @@ kbd {
 /* Narrow screens: stack the panels and let the page scroll instead of squeezing the video. */
 @media (max-width: 900px) {
   .editor { height: auto; min-height: 100dvh; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  /* Without this the spare height of min-height: 100dvh is spread over the auto rows, which inflates the
+     timeline panel far beyond its canvas; rows must hug their content instead. */
+  .editor { align-content: start; }
   .preview-stage { aspect-ratio: 16 / 9; flex: none; }
   /* The timeline drives the preview, so it sits right under it; details come last. Visual order only,
      DOM order (and tab order) stays preview → details → timeline. */

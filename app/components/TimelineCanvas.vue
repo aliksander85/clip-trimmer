@@ -123,6 +123,10 @@ function onPointerLeave(): void {
   width: 100%;
   /* Fills the panel; the renderer places the strip by the height it gets. */
   align-self: stretch;
+  /* The renderer sets the bitmap height to cssHeight * dpr, and a canvas reports its bitmap size as its
+     intrinsic size, so on a 2x display it would grow the panel to twice the needed height. Size must come
+     from the layout (stretch + min-height) only. */
+  contain: size;
   /* Without this the browser claims touch drags for scrolling/zoom and sends pointercancel. */
   touch-action: none;
 }
