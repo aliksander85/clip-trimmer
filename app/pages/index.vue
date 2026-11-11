@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { FolderOpen } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useMediaWorker } from '../composables/useMediaWorker'
@@ -15,25 +15,43 @@ useHotkeys()
 // Checked in the page (inside ClientOnly) because the globals exist only in the browser.
 const supported = typeof VideoDecoder !== 'undefined' && typeof VideoEncoder !== 'undefined'
 const sampleLoading = ref(false)
+// A sample still downloading must not land on top of a file the user picked meanwhile, nor report its failure there.
+let sampleAbort: AbortController | null = null
+
+function cancelSample(): void {
+  sampleAbort?.abort()
+  sampleAbort = null
+  sampleLoading.value = false
+}
+
+onBeforeUnmount(cancelSample)
 
 function onSelect(file: File): void {
+  cancelSample()
   store.loadFile(file)
 }
 
 async function onSample(): Promise<void> {
+  cancelSample()
+  const controller = new AbortController()
+  sampleAbort = controller
   sampleLoading.value = true
   try {
     // baseURL: on GitHub Pages the site lives under /<repo>/, not at the root.
-    const response = await fetch(`${baseURL}sample.mp4`)
+    const response = await fetch(`${baseURL}sample.mp4`, { signal: controller.signal })
     if (!response.ok) throw new Error(String(response.status))
     const blob = await response.blob()
+    if (controller.signal.aborted) return
     store.loadFile(new File([blob], 'sample.mp4', { type: 'video/mp4' }))
   }
   catch {
-    store.setError({ code: 'sampleFailed' })
+    if (!controller.signal.aborted) store.setError({ code: 'sampleFailed' })
   }
   finally {
-    sampleLoading.value = false
+    if (sampleAbort === controller) {
+      sampleAbort = null
+      sampleLoading.value = false
+    }
   }
 }
 

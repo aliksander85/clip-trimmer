@@ -136,10 +136,17 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function setTrim(nextIn: number, nextOut: number): void {
-    if (!meta.value) return
+    // The worker already got a copy of the range; a moved handle would show a range that is not being exported.
+    if (!meta.value || phase.value === 'exporting') return
     const trim = clampTrim(nextIn, nextOut, meta.value.durationSec, MIN_TRIM_SEC)
+    if (trim.inSec === inSec.value && trim.outSec === outSec.value) return
     inSec.value = trim.inSec
     outSec.value = trim.outSec
+    // The finished file was cut from the old range; offering it next to the new one would hand out the wrong clip.
+    if (phase.value === 'exported') {
+      revokeExportUrl()
+      phase.value = 'ready'
+    }
   }
 
   function seek(sec: number): void {

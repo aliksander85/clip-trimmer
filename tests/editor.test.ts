@@ -115,6 +115,38 @@ describe('editor store', () => {
       expect([store.phase, store.error]).toEqual(['ready', { code: 'unreadable' }])
     })
 
+    it('trim is locked while exporting', () => {
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.setTrim(2, 6)
+      store.startExport()
+      store.setTrim(3, 7)
+      expect([store.inSec, store.outSec, store.phase]).toEqual([2, 6, 'exporting'])
+    })
+
+    it('a trim change after export drops the stale download', () => {
+      const { revoke } = stubUrl()
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.startExport()
+      store.finishExport(new Blob(['x']))
+      store.setTrim(1, 10)
+      expect(revoke).toHaveBeenCalledWith('blob:a')
+      expect([store.phase, store.exportUrl, store.inSec]).toEqual(['ready', null, 1])
+      vi.unstubAllGlobals()
+    })
+
+    it('an unchanged trim keeps the download', () => {
+      stubUrl()
+      const store = useEditorStore()
+      store.setMeta(meta)
+      store.startExport()
+      store.finishExport(new Blob(['x']))
+      store.setTrim(0, 10)
+      expect([store.phase, store.exportUrl]).toEqual(['exported', 'blob:a'])
+      vi.unstubAllGlobals()
+    })
+
     it('reset revokes the export url', () => {
       const { revoke } = stubUrl()
       const store = useEditorStore()

@@ -37,7 +37,10 @@ function localX(e: PointerEvent): number {
 function hit(e: PointerEvent): HitTarget | null {
   const tolerance = e.pointerType === 'touch' ? TOUCH_TOLERANCE_PX : MOUSE_TOLERANCE_PX
   const trim = { inSec: store.inSec, outSec: store.outSec }
-  return hitTest(localX(e), trim, store.currentSec, viewport(), tolerance)
+  const target = hitTest(localX(e), trim, store.currentSec, viewport(), tolerance)
+  // The trim is locked while exporting: a grabbed handle would only scrub, and the cursor must not promise a resize.
+  if (store.phase === 'exporting' && (target === 'in' || target === 'out')) return 'track'
+  return target
 }
 
 function showHover(target: HitTarget | null): void {
