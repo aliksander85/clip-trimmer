@@ -152,7 +152,7 @@ kbd {
   padding: var(--gap);
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 3fr) minmax(0, 1fr);
   gap: var(--gap);
 }
 .timeline-panel { grid-column: 1 / -1; }
@@ -224,7 +224,13 @@ kbd {
 .details-sep { margin: 14px 0; border: 0; border-top: 1px solid var(--border); }
 .details .status { margin-top: 12px; }
 
-.timeline-body { flex: none; padding: 0; overflow: hidden; }
+.timeline-body {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  flex-grow: 1;
+  align-items: center;
+}
 
 /* Narrow screens: stack the panels and let the page scroll instead of squeezing the video. */
 @media (max-width: 900px) {
