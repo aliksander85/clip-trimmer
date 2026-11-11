@@ -127,16 +127,8 @@ function toggle(): void {
       <slot name="actions" />
     </header>
     <div class="panel-body preview-stage">
-      <video
-        ref="video"
-        :src="url ?? undefined"
-        playsinline
-        :muted="store.muted"
-        @play="onPlay"
-        @pause="onPause"
-        @timeupdate="onTimeUpdate"
-        @ended="onEnded"
-      />
+      <video ref="video" :src="url ?? undefined" playsinline :muted="store.muted" @play="onPlay"
+        @pause="onPause" @timeupdate="onTimeUpdate" @ended="onEnded" />
     </div>
     <footer class="panel-foot preview-controls">
       <span class="timecode" aria-hidden="true">
@@ -144,24 +136,17 @@ function toggle(): void {
         <span class="timecode-sep">/</span>
         <span>{{ formatDuration(store.meta?.durationSec ?? 0) }}</span>
       </span>
-      <button
-        type="button"
-        class="icon"
+      <button type="button" class="icon"
         :aria-label="store.isPlaying ? t('preview.pause') : t('preview.play')"
-        :title="store.isPlaying ? t('preview.pauseTitle') : t('preview.playTitle')"
-        @click="toggle"
-      >
+        :title="store.isPlaying ? t('preview.pauseTitle') : t('preview.playTitle')" @click="toggle">
         <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />
         <Play v-else :size="20" aria-hidden="true" />
       </button>
-      <button
-        type="button"
-        class="icon mute"
+      <button type="button" class="icon mute"
         :aria-label="store.muted ? t('preview.unmute') : t('preview.mute')"
         :aria-pressed="store.muted"
         :title="store.muted ? t('preview.unmuteTitle') : t('preview.muteTitle')"
-        @click="store.toggleMute()"
-      >
+        @click="store.toggleMute()">
         <VolumeX v-if="store.muted" :size="20" aria-hidden="true" />
         <Volume2 v-else :size="20" aria-hidden="true" />
       </button>

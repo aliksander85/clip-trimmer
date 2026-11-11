@@ -13,6 +13,8 @@
   --radius: 8px;
   --radius-panel: 12px;
   --gap: 8px;
+  /* Height of the fixed export bar on narrow screens; the editor reserves this much room at the bottom. */
+  --export-bar-h: 60px;
 }
 
 * { box-sizing: border-box; }
@@ -254,4 +256,23 @@ kbd {
   .preview { order: 0; }
   .timeline-panel { order: 1; }
   .details { order: 2; }
+
+  /* Export is the main action, so it must not sit below the fold. Fixed (not sticky): .panel has
+     overflow:hidden and details is last in the flow, so sticky would never pin it to the viewport.
+     Fixed is not clipped by an overflow:hidden ancestor. */
+  .editor { padding-bottom: calc(var(--export-bar-h) + var(--gap) + env(safe-area-inset-bottom)); }
+  .details .panel-foot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    justify-content: stretch;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgb(0 0 0 / 0.35);
+  }
+  .details .panel-foot .export { flex: 1; min-width: 0; }
+  /* The bar grows upwards when an error shows, so the message goes above the button. */
+  .details .panel-foot .export { flex-direction: column-reverse; }
 }
