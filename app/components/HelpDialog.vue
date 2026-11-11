@@ -3,11 +3,13 @@ import { onMounted, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { HOTKEY_HELP } from '../../lib/ui/hotkeys'
-import { HELP_SECTIONS } from '../../lib/ui/help'
+import { helpSections, showHotkeys } from '../../lib/ui/help'
 import { useI18n } from '../composables/useI18n'
+import { useInputMode } from '../composables/useInputMode'
 
 const store = useEditorStore()
 const { t } = useI18n()
+const mode = useInputMode()
 const dialog = ref<HTMLDialogElement | null>(null)
 
 function sync(open: boolean): void {
@@ -35,7 +37,7 @@ function onClick(event: MouseEvent): void {
       </button>
     </header>
 
-    <section>
+    <section v-if="showHotkeys(mode)">
       <h3>{{ t('help.keys') }}</h3>
       <dl class="keys">
         <template v-for="item in HOTKEY_HELP" :key="item.keys">
@@ -46,7 +48,7 @@ function onClick(event: MouseEvent): void {
       <p class="note">{{ t('help.keysNote') }}</p>
     </section>
 
-    <section v-for="section in HELP_SECTIONS" :key="section.titleKey">
+    <section v-for="section in helpSections(mode)" :key="section.titleKey">
       <h3>{{ t(section.titleKey) }}</h3>
       <ul>
         <li v-for="key in section.itemKeys" :key="key">{{ t(key) }}</li>
