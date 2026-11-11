@@ -19,6 +19,10 @@ export const en: Record<keyof typeof ru, string> = {
   'preview.pause': 'Pause',
   'preview.playTitle': 'Play (Space)',
   'preview.pauseTitle': 'Pause (Space)',
+  'preview.mute': 'Mute',
+  'preview.unmute': 'Unmute',
+  'preview.muteTitle': 'Mute (M)',
+  'preview.unmuteTitle': 'Unmute (M)',
 
   'export.start': 'Export',
   'export.cancel': 'Cancel',
@@ -56,6 +60,7 @@ export const en: Record<keyof typeof ru, string> = {
   'hotkey.toggle': 'Play / pause',
   'hotkey.setIn': 'Set clip start at the playhead',
   'hotkey.setOut': 'Set clip end at the playhead',
+  'hotkey.mute': 'Mute / unmute preview',
   'hotkey.help': 'Open this help',
 
   'help.keys': 'Hotkeys',

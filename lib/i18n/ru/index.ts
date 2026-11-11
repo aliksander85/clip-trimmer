@@ -16,6 +16,10 @@ export const ru = {
   'preview.pause': 'Пауза',
   'preview.playTitle': 'Играть (Пробел)',
   'preview.pauseTitle': 'Пауза (Пробел)',
+  'preview.mute': 'Выключить звук',
+  'preview.unmute': 'Включить звук',
+  'preview.muteTitle': 'Выключить звук (M)',
+  'preview.unmuteTitle': 'Включить звук (M)',
 
   'export.start': 'Экспорт',
   'export.cancel': 'Отмена',
@@ -53,6 +57,7 @@ export const ru = {
   'hotkey.toggle': 'Играть / пауза',
   'hotkey.setIn': 'Начало отрезка в позиции плейхеда',
   'hotkey.setOut': 'Конец отрезка в позиции плейхеда',
+  'hotkey.mute': 'Выключить / включить звук превью',
   'hotkey.help': 'Открыть эту справку',
 
   'help.keys': 'Горячие клавиши',

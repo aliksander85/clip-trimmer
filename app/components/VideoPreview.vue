@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
-import { Pause, Play } from 'lucide-vue-next'
+import { Pause, Play, Volume2, VolumeX } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useI18n } from '../composables/useI18n'
 import { formatDuration } from '../../lib/ui/format'
@@ -131,6 +131,7 @@ function toggle(): void {
         ref="video"
         :src="url ?? undefined"
         playsinline
+        :muted="store.muted"
         @play="onPlay"
         @pause="onPause"
         @timeupdate="onTimeUpdate"
@@ -152,6 +153,17 @@ function toggle(): void {
       >
         <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />
         <Play v-else :size="20" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        class="icon mute"
+        :aria-label="store.muted ? t('preview.unmute') : t('preview.mute')"
+        :aria-pressed="store.muted"
+        :title="store.muted ? t('preview.unmuteTitle') : t('preview.muteTitle')"
+        @click="store.toggleMute()"
+      >
+        <VolumeX v-if="store.muted" :size="20" aria-hidden="true" />
+        <Volume2 v-else :size="20" aria-hidden="true" />
       </button>
     </footer>
   </section>

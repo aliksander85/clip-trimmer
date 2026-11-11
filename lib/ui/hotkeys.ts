@@ -1,6 +1,6 @@
 import type { MessageKey } from '../i18n/messages'
 
-export type HotkeyAction = 'toggle' | 'setIn' | 'setOut' | 'help'
+export type HotkeyAction = 'toggle' | 'setIn' | 'setOut' | 'mute' | 'help'
 
 export interface KeyInput {
   /** `KeyboardEvent.code`: layout-independent, so I and O work on a Russian layout too. */
@@ -26,6 +26,7 @@ export const HOTKEY_HELP: readonly { keys: string, keysKey?: MessageKey, actionK
   { keys: 'Space', keysKey: 'hotkey.space', actionKey: 'hotkey.toggle' },
   { keys: 'I', actionKey: 'hotkey.setIn' },
   { keys: 'O', actionKey: 'hotkey.setOut' },
+  { keys: 'M', actionKey: 'hotkey.mute' },
   { keys: '?', actionKey: 'hotkey.help' },
 ]
 
@@ -40,6 +41,8 @@ export function resolveHotkey(key: KeyInput): HotkeyAction | null {
       return 'setIn'
     case 'KeyO':
       return 'setOut'
+    case 'KeyM':
+      return 'mute'
     default:
       return null
   }

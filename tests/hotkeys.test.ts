@@ -7,10 +7,11 @@ function key(over: Partial<KeyInput>): KeyInput {
 }
 
 describe('resolveHotkey', () => {
-  it('maps the three keys', () => {
+  it('maps the action keys', () => {
     expect(resolveHotkey(key({ code: 'Space' }))).toBe('toggle')
     expect(resolveHotkey(key({ code: 'KeyI' }))).toBe('setIn')
     expect(resolveHotkey(key({ code: 'KeyO' }))).toBe('setOut')
+    expect(resolveHotkey(key({ code: 'KeyM' }))).toBe('mute')
     expect(resolveHotkey(key({ code: 'KeyA' }))).toBeNull()
   })
 

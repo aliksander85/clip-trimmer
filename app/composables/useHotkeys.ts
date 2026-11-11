@@ -34,6 +34,10 @@ export function useHotkeys(): void {
       store.requestToggle()
       return
     }
+    if (action === 'mute') {
+      store.toggleMute()
+      return
+    }
     const next = applyMarker(action, store.currentSec, store.inSec, store.outSec, MIN_TRIM_SEC)
     if (next) store.setTrim(next.inSec, next.outSec)
   }

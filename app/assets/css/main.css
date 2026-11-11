@@ -214,6 +214,7 @@ kbd {
 }
 .preview-controls { display: grid; grid-template-columns: 1fr auto 1fr; justify-content: initial; }
 .preview-controls .icon { grid-column: 2; }
+.preview-controls .icon.mute { grid-column: 3; justify-self: end; }
 .timecode { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
 .timecode .accent { color: var(--accent); }
 .timecode-sep { margin: 0 4px; }
