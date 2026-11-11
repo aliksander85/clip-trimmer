@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CircleHelp, FolderOpen } from 'lucide-vue-next'
+import { FolderOpen } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useMediaWorker } from '../composables/useMediaWorker'
 import { useHotkeys } from '../composables/useHotkeys'
 import { useI18n } from '../composables/useI18n'
+import { formatDuration } from '../../lib/ui/format'
 
 const store = useEditorStore()
 const media = useMediaWorker()
@@ -49,45 +50,47 @@ function onSlots(count: number): void {
 <template>
   <ClientOnly>
     <UnsupportedBrowser v-if="!supported" />
-    <main v-else class="app">
-      <header class="app-header">
-        <div>
-          <h1>Clip Trimmer</h1>
-          <p>{{ t('app.tagline') }}</p>
-        </div>
-        <div class="header-actions">
-          <LanguageSwitcher />
-          <button type="button" class="icon" :aria-label="t('app.help')" :title="t('app.helpHint')" @click="store.helpOpen = true">
-            <CircleHelp :size="20" aria-hidden="true" />
-          </button>
-        </div>
-      </header>
-      <FilePicker
-        v-if="store.phase === 'empty' || store.phase === 'error'"
-        :error="store.error"
-        :sample-loading="sampleLoading"
-        @select="onSelect"
-        @sample="onSample"
-      />
-      <template v-else>
-        <VideoPreview />
-        <TimelineCanvas @slots="onSlots" />
-        <p v-if="store.meta" class="meta">
-          {{ store.meta.width }}×{{ store.meta.height }} ·
-          {{ store.meta.codec }}<template v-if="store.meta.fps !== null"> · {{ store.meta.fps }} fps</template>
-        </p>
-        <p v-else-if="store.phase === 'loading'" class="status">
-          <span class="spinner" aria-hidden="true" /> {{ t('app.reading') }}
-        </p>
-        <p v-if="store.meta" class="hint">
-          <kbd>{{ t('app.hint.space') }}</kbd> {{ t('app.hint.toggle') }} · <kbd>I</kbd> {{ t('app.hint.in') }} · <kbd>O</kbd> {{ t('app.hint.out') }} · <kbd>?</kbd> {{ t('app.hint.help') }}
-        </p>
-        <ExportPanel v-if="store.meta" />
-        <button type="button" class="link" @click="store.reset()">
-          <FolderOpen :size="16" aria-hidden="true" /> {{ t('app.anotherFile') }}
-        </button>
-      </template>
+    <template v-else>
+      <main v-if="store.phase === 'empty' || store.phase === 'error'" class="app">
+        <header class="app-header">
+          <div>
+            <h1>Clip Trimmer</h1>
+            <p>{{ t('app.tagline') }}</p>
+          </div>
+          <AppActions />
+        </header>
+        <FilePicker
+          :error="store.error"
+          :sample-loading="sampleLoading"
+          @select="onSelect"
+          @sample="onSample"
+        />
+      </main>
+      <main v-else class="editor">
+        <VideoPreview>
+          <template #actions>
+            <div class="head-actions">
+              <button type="button" class="link" @click="store.reset()">
+                <FolderOpen :size="16" aria-hidden="true" /> {{ t('app.anotherFile') }}
+              </button>
+              <AppActions />
+            </div>
+          </template>
+        </VideoPreview>
+        <DetailsPanel />
+        <section class="panel timeline-panel" aria-labelledby="timeline-title">
+          <header class="panel-head">
+            <h2 id="timeline-title" class="panel-title">{{ t('timeline.title') }}</h2>
+            <span v-if="store.meta" class="timecode">
+              {{ t('timeline.selection') }}: {{ formatDuration(store.inSec) }} – {{ formatDuration(store.outSec) }}
+            </span>
+          </header>
+          <div class="panel-body timeline-body">
+            <TimelineCanvas @slots="onSlots" />
+          </div>
+        </section>
+      </main>
       <HelpDialog />
-    </main>
+    </template>
   </ClientOnly>
 </template>

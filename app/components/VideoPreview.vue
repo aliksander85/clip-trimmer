@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import { Pause, Play } from 'lucide-vue-next'
 import { useEditorStore } from '../stores/editor'
 import { useI18n } from '../composables/useI18n'
+import { formatDuration } from '../../lib/ui/format'
 
 const store = useEditorStore()
 const { t } = useI18n()
@@ -120,25 +121,38 @@ function toggle(): void {
 </script>
 
 <template>
-  <div class="preview">
-    <video
-      ref="video"
-      :src="url ?? undefined"
-      playsinline
-      @play="onPlay"
-      @pause="onPause"
-      @timeupdate="onTimeUpdate"
-      @ended="onEnded"
-    />
-    <button
-      type="button"
-      class="icon"
-      :aria-label="store.isPlaying ? t('preview.pause') : t('preview.play')"
-      :title="store.isPlaying ? t('preview.pauseTitle') : t('preview.playTitle')"
-      @click="toggle"
-    >
-      <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />
-      <Play v-else :size="20" aria-hidden="true" />
-    </button>
-  </div>
+  <section class="panel preview">
+    <header class="panel-head">
+      <h2 class="panel-title" :title="store.file?.name">{{ store.file?.name }}</h2>
+      <slot name="actions" />
+    </header>
+    <div class="panel-body preview-stage">
+      <video
+        ref="video"
+        :src="url ?? undefined"
+        playsinline
+        @play="onPlay"
+        @pause="onPause"
+        @timeupdate="onTimeUpdate"
+        @ended="onEnded"
+      />
+    </div>
+    <footer class="panel-foot preview-controls">
+      <span class="timecode" aria-hidden="true">
+        <span class="accent">{{ formatDuration(store.currentSec) }}</span>
+        <span class="timecode-sep">/</span>
+        <span>{{ formatDuration(store.meta?.durationSec ?? 0) }}</span>
+      </span>
+      <button
+        type="button"
+        class="icon"
+        :aria-label="store.isPlaying ? t('preview.pause') : t('preview.play')"
+        :title="store.isPlaying ? t('preview.pauseTitle') : t('preview.playTitle')"
+        @click="toggle"
+      >
+        <Pause v-if="store.isPlaying" :size="20" aria-hidden="true" />
+        <Play v-else :size="20" aria-hidden="true" />
+      </button>
+    </footer>
+  </section>
 </template>

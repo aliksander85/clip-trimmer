@@ -24,7 +24,8 @@ const PLAYHEAD_WIDTH_PX = 2
 const LABEL_BASELINE_GAP_PX = 14
 
 export const COLORS = {
-  background: '#16181d',
+  // Same tone as --panel in main.css; the canvas cannot read CSS variables, so keep them in sync.
+  background: '#1f2228',
   placeholder: '#262a33',
   dim: 'rgba(0, 0, 0, 0.6)',
   frame: '#f5c542',
