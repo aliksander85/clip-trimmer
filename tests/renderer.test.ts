@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { COLORS, drawTimeline, formatTime } from '../lib/timeline/renderer'
+import { COLORS, drawTimeline, formatRulerTime, formatTime } from '../lib/timeline/renderer'
 import type { RenderState } from '../lib/timeline/renderer'
 
 describe('formatTime', () => {
@@ -43,6 +43,14 @@ function recordingContext(): { ctx: CanvasRenderingContext2D, calls: Call[] } {
   return { ctx: ctx as unknown as CanvasRenderingContext2D, calls }
 }
 
+describe('formatRulerTime', () => {
+  it('formats m:ss, h:mm:ss and tenths', () => {
+    expect(formatRulerTime(75, 5)).toBe('1:15')
+    expect(formatRulerTime(3725, 60)).toBe('1:02:05')
+    expect(formatRulerTime(1.5, 0.5)).toBe('0:01.5')
+  })
+})
+
 describe('drawTimeline', () => {
   it('draws layers in the order from SPEC 5.3', () => {
     const { ctx, calls } = recordingContext()
@@ -66,12 +74,21 @@ describe('drawTimeline', () => {
     const frame = first((c) => c.op === 'strokeRect')
     const handle = first((c) => c.op === 'fillRect' && c.style === COLORS.handle)
     const playhead = first((c) => c.op === 'fillRect' && c.style === COLORS.playhead)
-    const label = first((c) => c.op === 'fillText')
+    const label = first((c) => c.op === 'fillText' && c.style === COLORS.label)
 
     const order = [background, Math.max(thumb, placeholder), dim, frame, handle, playhead, label]
     expect(Math.min(...order)).toBeGreaterThanOrEqual(0)
     expect(order).toEqual([...order].sort((a, b) => a - b))
     expect(Math.min(thumb, placeholder)).toBeGreaterThan(background)
+  })
+
+  it('draws ruler labels', () => {
+    const { ctx, calls } = recordingContext()
+    drawTimeline(ctx, {
+      vp: { widthPx: 400, durationSec: 10, paddingPx: 12 },
+      thumbs: [], inSec: 0, outSec: 10, currentSec: 0, hover: null, dpr: 1,
+    })
+    expect(calls.some((c) => c.op === 'fillText' && c.style === COLORS.ruler)).toBe(true)
   })
 
   it('treats a closed bitmap as a placeholder', () => {

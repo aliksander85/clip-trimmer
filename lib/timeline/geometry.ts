@@ -102,3 +102,40 @@ export function slotTimes(count: number, durationSec: number): number[] {
   const slot = durationSec / count
   return Array.from({ length: count }, (_, i) => (i + 0.5) * slot)
 }
+
+export interface RulerTick {
+  sec: number
+  /** Labelled tick; the others are unlabelled subdivisions. */
+  major: boolean
+}
+
+export interface Ruler {
+  /** Distance between labelled ticks, in seconds. Labels use it to decide on fractional digits. */
+  stepSec: number
+  ticks: RulerTick[]
+}
+
+// [step, subdivisions per step]: subdivisions are chosen so minor ticks land on round numbers.
+const RULER_STEPS: readonly (readonly [number, number])[] = [
+  [0.1, 1], [0.2, 2], [0.5, 5], [1, 5], [2, 2], [5, 5], [10, 5], [15, 3], [30, 6],
+  [60, 6], [120, 2], [300, 5], [600, 5], [900, 3], [1800, 6], [3600, 6],
+]
+const MIN_MINOR_GAP_PX = 6
+
+export function rulerTicks(durationSec: number, trackWidthPx: number, minLabelGapPx: number): Ruler {
+  if (durationSec <= 0 || trackWidthPx <= 0) return { stepSec: 0, ticks: [] }
+  const pxPerSec = trackWidthPx / durationSec
+  const found = RULER_STEPS.find(([step]) => step * pxPerSec >= minLabelGapPx)
+  // Longer than the table: whole hours keep the labels apart.
+  const stepSec = found ? found[0] : 3600 * Math.ceil(minLabelGapPx / (3600 * pxPerSec))
+  let div = found ? found[1] : 1
+  // Drop subdivisions that would blur into a solid line.
+  if ((stepSec / div) * pxPerSec < MIN_MINOR_GAP_PX) div = 1
+
+  const minor = stepSec / div
+  const count = Math.floor(durationSec / minor + 1e-9)
+  const ticks: RulerTick[] = []
+  // Index-based so floating-point error cannot accumulate across thousands of ticks.
+  for (let i = 0; i <= count; i++) ticks.push({ sec: i * minor, major: i % div === 0 })
+  return { stepSec, ticks }
+}

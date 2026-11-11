@@ -3,6 +3,7 @@ import {
   clampTrim,
   hitTest,
   moveHandle,
+  rulerTicks,
   slotTimes,
   thumbSlots,
   timeToX,
@@ -180,5 +181,31 @@ describe('slotTimes', () => {
 
   it('returns an empty list for count <= 0', () => {
     expect(slotTimes(0, 10)).toEqual([])
+  })
+})
+
+describe('rulerTicks', () => {
+  it('returns nothing for empty input', () => {
+    expect(rulerTicks(0, 500, 60).ticks).toEqual([])
+    expect(rulerTicks(10, 0, 60).ticks).toEqual([])
+  })
+
+  it('picks the smallest step that keeps labels apart', () => {
+    // 10 px/s, 60 px gap -> 10 s step is the first with >= 60 px.
+    expect(rulerTicks(100, 1000, 60).stepSec).toBe(10)
+    // 1 px/s -> 60 s.
+    expect(rulerTicks(600, 600, 60).stepSec).toBe(60)
+  })
+
+  it('starts at 0, stays within the duration and marks majors on step multiples', () => {
+    const { ticks, stepSec } = rulerTicks(100, 1000, 60)
+    expect(ticks[0]).toEqual({ sec: 0, major: true })
+    expect(Math.max(...ticks.map((t) => t.sec))).toBeLessThanOrEqual(100)
+    for (const t of ticks.filter((x) => x.major)) expect(t.sec % stepSec).toBeCloseTo(0)
+    expect(ticks.some((t) => !t.major)).toBe(true)
+  })
+
+  it('falls back to whole hours for very long clips', () => {
+    expect(rulerTicks(36 * 3600, 200, 64).stepSec % 3600).toBe(0)
   })
 })
