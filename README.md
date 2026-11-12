@@ -4,7 +4,7 @@ A browser-based video trimmer. Drop an MP4, see a thumbnail timeline drawn on Ca
 
 **Demo:** https://aliksander85.github.io/clip-trimmer/
 
-<!-- TODO: GIF, 10–15 s: load the sample → drag handles → play → export → download -->
+![Demo: open a video, trim it on the timeline, export and download](docs/demo.gif)
 
 Chrome or Edge only (needs WebCodecs). Other browsers get an "unsupported browser" screen. Input is H.264 MP4 up to 500 MB. The "try the sample" button loads `public/sample.mp4` (about 4 MB) so you don't need a file of your own.
 
